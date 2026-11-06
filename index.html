@@ -1,0 +1,2138 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kasauti — India gold rate forecaster</title>
+<meta name="description" content="Live 24K and 22K gold rates for India with a deep-learning forecast that retrains every minute and keeps a ledger of its own mistakes.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Latin:wdth,wght@75..125,300..800&display=swap">
+<style>
+:root{
+  --page:#F0F0EB;--panel:#FFFFFF;--panel-2:#F6F6F2;
+  --ink:#1B2130;--ink-2:#4A5163;--ink-3:#737989;
+  --rule:#E1E1DA;--rule-2:#CBCBC2;
+  --gold:#9C6D0A;--gold-line:#B58519;--gold-wash:rgba(181,133,25,.16);
+  --sindoor:#B0252D;--sindoor-wash:rgba(176,37,45,.10);
+  --peacock:#0E716F;--peacock-wash:rgba(14,113,111,.10);
+  --board:#17110F;--board-rule:#35281F;--board-ink:#D7C6AF;--board-ink-2:#9A8770;--board-hi:#F4E7D4;
+  --led:#FF4B37;--led-off:#2F1C17;--amber:#FFB42D;--amber-off:#33271A;
+  --e1:#2a78d6;--e2:#eb6834;--e3:#1baf7a;--e4:#eda100;--e5:#e87ba4;
+  --focus:#2a78d6;
+  --font:"Anek Latin",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --page:#0F1012;--panel:#17191D;--panel-2:#1D2024;
+    --ink:#EDEDE8;--ink-2:#BABDC5;--ink-3:#8D919B;
+    --rule:#2A2D33;--rule-2:#3C3F47;
+    --gold:#E2B24C;--gold-line:#E6B957;--gold-wash:rgba(230,185,87,.15);
+    --sindoor:#E4585F;--sindoor-wash:rgba(228,88,95,.13);
+    --peacock:#41B9B2;--peacock-wash:rgba(65,185,178,.12);
+    --e1:#3987e5;--e2:#d95926;--e3:#199e70;--e4:#c98500;--e5:#d55181;
+    --focus:#5598e7;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);font:400 15px/1.5 var(--font)}
+a{color:inherit;text-underline-offset:2px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-stretch:112%;letter-spacing:-.005em}
+h2{font-size:1.2rem;font-weight:650;margin:0}
+h3{font-size:1rem;font-weight:650;margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px 40px}
+.sub{color:var(--ink-2);margin:.3rem 0 0;font-size:.9rem;max-width:78ch}
+.num{font-variant-numeric:tabular-nums}
+.up{color:var(--peacock)}.down{color:var(--sindoor)}.muted{color:var(--ink-3)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 28px;padding:26px 0 18px;border-bottom:1px solid var(--rule)}
+.wordmark{margin:0;font-size:2.2rem;line-height:1;font-weight:760;font-stretch:125%;letter-spacing:-.015em}
+.wordmark span{font-size:1.05rem;font-weight:500;color:var(--ink-3);margin-left:.45rem;letter-spacing:0}
+.tagline{margin:.5rem 0 0;color:var(--ink-2);max-width:62ch}
+.status{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border:1px solid var(--rule-2);border-radius:999px;font-size:.8125rem;color:var(--ink-2);background:var(--panel);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}
+.dot.ok{background:var(--peacock)}.dot.warn{background:#C98500}.dot.bad{background:var(--sindoor)}
+.banner{margin-top:14px;padding:10px 14px;border-radius:10px;border:1px solid var(--rule-2);background:var(--panel-2);font-size:.9rem;color:var(--ink-2)}
+.banner.bad{border-color:var(--sindoor);background:var(--sindoor-wash);color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(320px,410px) minmax(0,1fr);gap:20px;margin-top:20px;align-items:stretch}
+@media (max-width:940px){.hero{grid-template-columns:1fr}}
+.board{background:var(--board);color:var(--board-ink);border-radius:14px;padding:18px 18px 14px;box-shadow:inset 0 0 0 1px var(--board-rule);display:flex;flex-direction:column}
+.board h2{font-size:.95rem;font-weight:600;color:var(--board-ink);margin:0 0 8px}
+.brow{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 12px;padding:9px 0;border-top:1px solid var(--board-rule)}
+.brow .k{line-height:1.15}
+.brow .k b{display:block;font-size:1.3rem;font-weight:700;color:var(--board-hi);font-stretch:118%}
+.brow .k span{font-size:.78rem;color:var(--board-ink-2)}
+.brow .v{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0}
+.rs{font-size:1.35rem;color:var(--board-ink);font-weight:500}
+.brow.main .rs{font-size:1.7rem}
+.led{display:block;max-width:100%;height:auto}
+.led .on{fill:var(--led)}.led .off{fill:var(--led-off)}
+.led.amber .on{fill:var(--amber)}.led.amber .off{fill:var(--amber-off)}
+.bnext .k b{font-size:1.05rem}
+.bmeta{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin:10px 0 0;padding-top:12px;border-top:1px solid var(--board-rule);font-size:.8125rem}
+.bmeta div{min-width:0}
+.bmeta dt{color:var(--board-ink-2)}
+.bmeta dd{margin:0;color:var(--board-hi);font-variant-numeric:tabular-nums}
+.gst{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.85rem;color:var(--board-ink);cursor:pointer}
+.gst input{accent-color:var(--amber);width:16px;height:16px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:16px 18px}
+.chart-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px}
+.seg{display:inline-flex;border:1px solid var(--rule-2);border-radius:8px;overflow:hidden;flex:none}
+.seg button{border:0;background:transparent;padding:5px 11px;font-size:.8125rem;cursor:pointer;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--rule-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.chart-wrap{position:relative;height:340px;margin-top:10px}
+.chart-wrap.small{height:200px}
+.chart-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--rule-2);border-radius:8px;padding:7px 10px;font-size:.8125rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.14);white-space:nowrap;z-index:3}
+.tip b{font-weight:650}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:.8125rem;color:var(--ink-2)}
+.key{display:inline-flex;align-items:center;gap:7px}
+.key i{display:inline-block;width:18px;border-top:2px solid var(--ink-3)}
+.key i.dash{border-top-style:dashed}
+.key i.band{height:10px;border:0;background:var(--gold-wash)}
+.key i.sw{width:10px;height:10px;border:0;border-radius:2px}
+.boot{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;background:var(--panel);text-align:center;padding:20px;z-index:4}
+.boot p{margin:0;max-width:52ch;color:var(--ink-2)}
+.boot .phase{font-weight:600;color:var(--ink)}
+.progress{width:min(420px,90%);height:6px;border-radius:3px;background:var(--rule);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--gold-line);transition:width .3s}
+
+/* blocks */
+.block{margin-top:30px}
+.block > header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%}
+.ftable{margin-top:12px;background:var(--panel);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.ftable th,.ftable td{padding:11px 14px;border-bottom:1px solid var(--rule);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ftable tr:last-child td{border-bottom:0}
+.ftable th:first-child,.ftable td:first-child{text-align:left}
+.ftable thead th{font-size:.8125rem;font-weight:500;color:var(--ink-3);background:var(--panel-2)}
+.ftable td.big{font-size:1.05rem;font-weight:650}
+.note{margin:10px 0 0;padding:10px 14px;border-left:3px solid var(--gold-line);background:var(--panel);border-radius:0 10px 10px 0;font-size:.9rem}
+.note button{margin-left:8px}
+
+/* drivers */
+.composite{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;align-items:center;margin-top:14px;padding:14px 16px;background:var(--panel);border:1px solid var(--rule);border-radius:14px}
+.composite .cv{font-size:2rem;font-weight:700;font-stretch:115%;line-height:1}
+.composite .cm{width:min(360px,60vw)}
+.ctrack{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--sindoor-wash),var(--rule) 50%,var(--peacock-wash))}
+.ctrack i{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--ink);transform:translateX(-2px)}
+.cscale{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-3);margin-top:4px}
+.dtable{margin-top:12px;background:var(--panel);border:1px solid var(--rule);border-radius:14px;overflow:hidden;min-width:980px}
+.dtable th{font-size:.8125rem;font-weight:500;color:var(--ink-3);text-align:left;padding:10px 10px;background:var(--panel-2);border-bottom:1px solid var(--rule)}
+.dtable td{padding:10px 10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.dtable tr:last-child td{border-bottom:0}
+.dname b{display:block;font-weight:620}
+.dname span{display:block;font-size:.78rem;color:var(--ink-3);max-width:36ch;line-height:1.35}
+.ival{font-weight:650;font-size:1.05rem;font-variant-numeric:tabular-nums;text-align:right;width:3em}
+.meter{position:relative;width:110px;height:8px;border-radius:4px;background:var(--rule)}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--ink-2)}
+.meter::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink-3)}
+.reading{font-size:.84rem;color:var(--ink-2);max-width:30ch;line-height:1.35}
+.spark{width:120px;height:30px;display:block}
+.spark path{fill:none;stroke:var(--ink-2);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.spark line{stroke:var(--rule-2);stroke-width:1;vector-effect:non-scaling-stroke}
+.eff{font-size:.84rem;line-height:1.35;max-width:22ch}
+.eff small{display:block;color:var(--ink-3)}
+.slider{display:flex;align-items:center;gap:8px}
+.slider input{width:110px;accent-color:var(--ink)}
+.slider output{font-size:.8rem;color:var(--ink-3);width:2.2em;font-variant-numeric:tabular-nums}
+@media (max-width:760px){
+  .composite{grid-template-columns:1fr}
+  .composite .cm{width:100%}
+  .dtable{min-width:0}
+  .dtable thead{display:none}
+  .dtable tbody tr{display:grid;grid-template-columns:3em minmax(0,1fr);gap:8px 12px;padding:14px;border-bottom:1px solid var(--rule)}
+  .dtable tbody tr:last-child{border-bottom:0}
+  .dtable tbody td{border:0;padding:0}
+  .dtable td.dname,.dtable td.reading,.dtable td:nth-child(5),.dtable td:nth-child(6),.dtable td:nth-child(7),.dtable td:nth-child(8){grid-column:1 / -1}
+  .dtable td.ival{width:auto;text-align:left}
+  .dtable td:nth-child(3){align-self:center}
+  .dtable td.reading,.dtable td.eff,.dname span{max-width:none}
+  .meter{width:100%}
+  .spark{width:100%}
+  .slider input{flex:1;width:auto}
+  .dtable td:nth-child(7)::before{content:"Learned so far: ";color:var(--ink-3)}
+  .dtable td:nth-child(8):not(:empty)::before{content:"Try a value";display:block;font-size:.8rem;color:var(--ink-3);margin-bottom:2px}
+}
+.macro{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:14px 0 0;padding:0}
+.macro div{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:10px 12px}
+.macro dt{font-size:.8rem;color:var(--ink-2)}
+.macro dd{margin:2px 0 0;font-size:1.1rem;font-weight:650;font-variant-numeric:tabular-nums}
+.macro dd small{display:block;font-size:.75rem;font-weight:400;color:var(--ink-3)}
+
+/* learning */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:11px 13px}
+.tile .l{font-size:.8125rem;color:var(--ink-2)}
+.tile .v{font-size:1.5rem;font-weight:650;margin-top:2px;line-height:1.2}
+.tile .n{font-size:.75rem;color:var(--ink-3)}
+.learn-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;margin-top:16px;align-items:start}
+@media (max-width:1000px){.learn-grid{grid-template-columns:1fr}}
+.side{display:grid;gap:14px}
+.bahi{background:var(--panel);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.bahi-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 16px 12px;border-bottom:2px solid var(--sindoor)}
+.bahi-scroll{max-height:760px;overflow:auto}
+.bahi table th,.bahi table td{padding:7px 10px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;border-bottom:1px solid var(--sindoor-wash)}
+.bahi table th{position:sticky;top:0;background:var(--panel);font-size:.78rem;font-weight:500;color:var(--ink-3);border-bottom:1px solid var(--sindoor);z-index:1}
+.bahi table td:first-child,.bahi table th:first-child{text-align:left;border-right:1px solid var(--sindoor)}
+.bahi td.pen{font-weight:600}
+.bahi tr.miss td.pen{color:var(--sindoor)}
+.bahi .empty{padding:24px 16px;color:var(--ink-3);text-align:left}
+.skillrow{display:grid;grid-template-columns:62px minmax(0,1fr) 92px;align-items:center;gap:10px;padding:5px 0;font-size:.85rem}
+.skilltrack{position:relative;height:12px}
+.skilltrack::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink-3)}
+.skillbar{position:absolute;top:2px;height:8px;border-radius:4px}
+.skillrow .val{text-align:right;font-variant-numeric:tabular-nums}
+.wrow{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;align-items:center;padding:5px 0;font-size:.85rem}
+.wbar{display:flex;height:10px;gap:2px}
+.wbar span{display:block;height:100%;border-radius:2px;min-width:2px}
+.events{list-style:none;margin:8px 0 0;padding:0;font-size:.84rem;max-height:220px;overflow:auto}
+.events li{padding:6px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:52px 1fr;gap:8px}
+.events li:last-child{border-bottom:0}
+.events time{color:var(--ink-3);font-variant-numeric:tabular-nums}
+.events .warn{color:var(--sindoor)}
+
+/* settings */
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px 20px;margin-top:14px}
+.field label{display:block;font-size:.88rem;font-weight:600}
+.field small{display:block;color:var(--ink-3);font-size:.78rem;margin-top:2px;line-height:1.35}
+.field input{width:100%;margin-top:6px;padding:7px 9px;border:1px solid var(--rule-2);border-radius:8px;background:var(--panel);font-variant-numeric:tabular-nums}
+.calib{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px;margin-top:16px;padding:14px 16px;background:var(--panel);border:1px solid var(--rule);border-radius:14px}
+.calib .field{min-width:240px;flex:1}
+.btn{border:1px solid var(--rule-2);background:var(--panel);border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:560;color:var(--ink)}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn.danger{color:var(--sindoor);border-color:var(--sindoor)}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.feeds{margin-top:10px;background:var(--panel);border:1px solid var(--rule);border-radius:14px;overflow:hidden;min-width:720px}
+.feeds th{font-size:.8rem;font-weight:500;color:var(--ink-3);text-align:left;padding:9px 12px;background:var(--panel-2);border-bottom:1px solid var(--rule)}
+.feeds td{padding:9px 12px;border-bottom:1px solid var(--rule);font-size:.85rem;vertical-align:top}
+.feeds tr:last-child td{border-bottom:0}
+.sub3{margin-top:22px}
+
+/* method */
+.method{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px}
+@media (max-width:900px){.method{grid-template-columns:1fr}}
+.method ol,.method ul{margin:10px 0 0;padding-left:1.25rem;max-width:72ch}
+.method li{margin:0 0 8px}
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule);font-size:.82rem;color:var(--ink-3)}
+footer p{margin:0 0 6px;max-width:110ch}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1 class="wordmark">Kasauti<span lang="hi">कसौटी</span></h1>
+    <p class="tagline">A live gold-rate forecaster for India. It retrains every minute and keeps a ledger of its own mistakes.</p>
+  </div>
+  <div class="status" aria-live="polite">
+    <span class="pill"><span class="dot" id="dotFeed"></span><span id="stFeed">Connecting to markets</span></span>
+    <span class="pill"><span class="dot" id="dotModel"></span><span id="stModel">Model starting</span></span>
+    <span class="pill" id="stNext">Next update soon</span>
+  </div>
+</header>
+
+<div id="banner" class="banner" role="status" hidden></div>
+
+<section class="hero" aria-label="Current rate and forecast">
+  <div class="board" aria-labelledby="boardTitle">
+    <h2 id="boardTitle">Gold rate in India, per 10 grams</h2>
+    <div class="brow main"><div class="k"><b>24K</b><span>999 fine</span></div><div class="v"><span class="rs">₹</span><span id="led24" role="img" aria-label="loading"></span></div></div>
+    <div class="brow"><div class="k"><b>22K</b><span>916 hallmark</span></div><div class="v"><span class="rs">₹</span><span id="led22" role="img" aria-label="loading"></span></div></div>
+    <div class="brow"><div class="k"><b>18K</b><span>750 hallmark</span></div><div class="v"><span class="rs">₹</span><span id="led18" role="img" aria-label="loading"></span></div></div>
+    <div class="brow bnext"><div class="k"><b id="nextLabel">Next hour</b><span id="nextDelta">forecast for 24K</span></div><div class="v"><span class="rs">₹</span><span id="ledNext" role="img" aria-label="loading"></span></div></div>
+    <dl class="bmeta">
+      <div><dt>Spot gold</dt><dd id="mSpot">—</dd></div>
+      <div><dt>Rupee</dt><dd id="mFx">—</dd></div>
+      <div><dt>Import duty</dt><dd id="mDuty">—</dd></div>
+      <div><dt>Updated</dt><dd id="mUpd">—</dd></div>
+    </dl>
+    <label class="gst"><input type="checkbox" id="gstToggle"> <span id="gstLabel">Include 3% GST</span></label>
+  </div>
+
+  <div class="panel">
+    <div class="chart-head">
+      <div>
+        <h2>24K rate and the next hour</h2>
+        <p class="sub" id="chartSub">Minute prices. The shaded fan is the model's 80% range.</p>
+      </div>
+      <div class="seg" role="group" aria-label="Chart range">
+        <button type="button" data-range="180" aria-pressed="true">3 h</button>
+        <button type="button" data-range="720" aria-pressed="false">12 h</button>
+        <button type="button" data-range="4320" aria-pressed="false">3 days</button>
+      </div>
+    </div>
+    <div class="chart-wrap" id="mainWrap">
+      <canvas id="mainChart" role="img" aria-label="Chart of the 24K gold rate with forecast"></canvas>
+      <div class="tip" id="mainTip" hidden></div>
+      <div class="boot" id="boot">
+        <p class="phase" id="bootPhase">Starting up</p>
+        <div class="progress" aria-hidden="true"><i id="bootBar"></i></div>
+        <p id="bootNote">The first visit takes about a minute: the page downloads 3½ days of minute data and trains the deep net in your browser.</p>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="key"><i style="border-color:var(--gold-line)"></i>Actual 24K rate</span>
+      <span class="key"><i class="dash" style="border-color:var(--ink)"></i>Forecast</span>
+      <span class="key"><i class="band"></i>80% range</span>
+      <span class="key"><i style="border-color:var(--ink-3)"></i>What it predicted 15 minutes earlier</span>
+    </div>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="fcTitle">
+  <h2 id="fcTitle">Forecast for the 24K rate</h2>
+  <p class="sub">Each forecast blends five experts, weighted by how few penalty points each has earned recently. Forecasts assume the rupee stays flat within the hour.</p>
+  <div class="scroll-x">
+    <table class="ftable" id="ftable">
+      <thead><tr><th scope="col">Horizon</th><th scope="col">Forecast (₹ per 10 g)</th><th scope="col">Change</th><th scope="col">80% range</th><th scope="col">Chance of a rise</th><th scope="col">Live skill vs no change</th><th scope="col">Right direction</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="note" id="scenarioNote" hidden></p>
+</section>
+
+<section class="block" aria-labelledby="drvTitle">
+  <h2 id="drvTitle">What is driving it</h2>
+  <p class="sub">Every input is turned into an index from 0 to 100, where 50 is normal for the past week. The model reads these numbers every minute. Move a slider to see how the forecast would change if a driver jumped.</p>
+  <div class="composite" id="composite"></div>
+  <div class="scroll-x">
+    <table class="dtable" id="dtable">
+      <thead><tr><th scope="col">Driver</th><th scope="col">Index</th><th scope="col"><span class="sr">Index meter</span></th><th scope="col">Latest reading</th><th scope="col">Last 24 hours</th><th scope="col">Usual effect</th><th scope="col">Learned effect on the 1-hour forecast</th><th scope="col">Try a value</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <h3 class="sub3">Macro backdrop</h3>
+  <dl class="macro" id="macro"></dl>
+</section>
+
+<section class="block" aria-labelledby="lrnTitle">
+  <h2 id="lrnTitle">How the model is learning</h2>
+  <p class="sub">Each forecast is checked against the actual rate when its time comes. A miss earns penalty points: the squared error measured in typical moves, one extra point for calling the direction wrong, and half a point when the outcome lands outside the 80% range. Penalised examples then weigh more in the next update and are replayed more often, experts that keep missing lose influence, and the learning rate rises while penalties run above normal.</p>
+  <div class="tiles" id="tiles"></div>
+  <div class="learn-grid">
+    <div class="bahi">
+      <div class="bahi-head">
+        <div><h3>Penalty ledger</h3><p class="sub" id="ledgerSub">Newest first. Times are IST.</p></div>
+        <div class="seg" role="group" aria-label="Ledger horizon" id="ledgerSeg">
+          <button type="button" data-h="all" aria-pressed="true">All</button>
+          <button type="button" data-h="0" aria-pressed="false">1 min</button>
+          <button type="button" data-h="1" aria-pressed="false">5 min</button>
+          <button type="button" data-h="2" aria-pressed="false">15 min</button>
+          <button type="button" data-h="3" aria-pressed="false">1 h</button>
+        </div>
+      </div>
+      <div class="bahi-scroll">
+        <table id="ledger"><thead><tr><th scope="col">Made at</th><th scope="col">For</th><th scope="col">Forecast</th><th scope="col">Actual</th><th scope="col">Miss</th><th scope="col">Direction</th><th scope="col">Penalty</th></tr></thead><tbody></tbody></table>
+        <p class="empty" id="ledgerEmpty">The first forecasts are checked one minute after the model starts.</p>
+      </div>
+    </div>
+    <div class="side">
+      <div class="panel">
+        <h3>Penalty points so far</h3>
+        <p class="sub">All horizons, cumulative, counting error size only. Lower is better; the gap to the grey line is what the model has added over a no-change forecast.</p>
+        <p class="sub" id="penSum"></p>
+        <div class="chart-wrap small"><canvas id="penChart" role="img" aria-label="Cumulative penalty points, model versus no-change forecast"></canvas><div class="tip" id="penTip" hidden></div></div>
+        <div class="legend"><span class="key"><i style="border-color:var(--sindoor)"></i>Model</span><span class="key"><i style="border-color:var(--ink-3)"></i>No-change forecast</span></div>
+      </div>
+      <div class="panel">
+        <h3>Skill by horizon</h3>
+        <p class="sub">Error reduction against a no-change forecast over the last 300 checks. Right of the line is better than no change.</p>
+        <div id="skillBars"></div>
+      </div>
+      <div class="panel">
+        <h3>Who the ensemble trusts</h3>
+        <div id="experts"></div>
+      </div>
+      <div class="panel">
+        <h3>Learning events</h3>
+        <ul class="events" id="events"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="setTitle">
+  <h2 id="setTitle">Assumptions and calibration</h2>
+  <p class="sub">The landed 24K rate is spot gold × USD/INR ÷ 31.1035 g × 10 × (1 + import duty) × (1 + local premium). Change anything here and the board updates at once. Values are saved in this browser.</p>
+  <div class="settings-grid" id="settings"></div>
+  <div class="calib">
+    <div class="field">
+      <label for="quote">Your local 24K rate today (₹ per 10 g)</label>
+      <small id="quoteHelp">Enter the rate your jeweller or IBJA quotes, without GST, and press Calibrate. The difference becomes the local premium.</small>
+      <input id="quote" type="number" inputmode="decimal" min="10000" step="1" placeholder="e.g. 142000">
+    </div>
+    <button type="button" class="btn primary" id="calibBtn">Calibrate</button>
+    <span class="muted" id="calibMsg"></span>
+  </div>
+  <h3 class="sub3">Data feeds</h3>
+  <div class="scroll-x"><table class="feeds" id="feeds"><thead><tr><th scope="col">Source</th><th scope="col">Used for</th><th scope="col">Status</th><th scope="col">Last success</th><th scope="col">Detail</th></tr></thead><tbody></tbody></table></div>
+  <h3 class="sub3">Model file</h3>
+  <p class="sub">Export saves the trained network, its scalers and expert weights. Commit the file next to index.html as <code>kasauti-state.json</code> and new visitors start from it instead of training from scratch.</p>
+  <div class="btnrow">
+    <button type="button" class="btn" id="exportBtn">Export model file</button>
+    <label class="btn" for="importFile">Import model file</label>
+    <input type="file" id="importFile" accept="application/json,.json" class="sr">
+    <button type="button" class="btn" id="retrainBtn">Retrain from scratch</button>
+    <button type="button" class="btn danger" id="clearBtn">Delete everything stored</button>
+  </div>
+</section>
+
+<section class="block method" aria-labelledby="howTitle">
+  <div>
+    <h2 id="howTitle">How it works</h2>
+    <ol>
+      <li><strong>Data.</strong> Every minute the page pulls 1-minute candles for gold, silver, Brent crude, the S&amp;P 500, the euro and the yen (Hyperliquid's trade.xyz markets), a US 10-year Treasury-yield market and bitcoin. It adds spot gold from gold-api.com, USD/INR from three sources, US Treasury nominal and real yields, earthquakes from USGS and world news volume and tone from GDELT.</li>
+      <li><strong>Indices.</strong> Each input becomes a 0–100 index. News indices compare the latest hour with the past week. Geological risk adds up recent earthquakes, weighted by magnitude and distance to the main gold-mining belts. Festive demand follows the Hindu calendar and the wedding seasons.</li>
+      <li><strong>Deep net.</strong> A two-layer LSTM reads the last hour as 12 steps of 36 features, a dense branch reads the current minute, and the network outputs a mean and an uncertainty for 1, 5, 15 and 60 minutes ahead. It first trains on 3½ days of history, then keeps training every minute with TensorFlow.js on your device.</li>
+      <li><strong>Ensemble.</strong> The deep net competes with a factor model (recursive least squares), momentum, mean reversion and a no-change forecast. Weights follow the Hedge rule: every penalty point shrinks an expert's weight, so the blend shifts toward whoever has been right lately.</li>
+      <li><strong>Self-correction.</strong> Penalties raise sample weights and replay priority, move the learning rate, widen or narrow the 80% range until it really covers 80%, and trigger a learning boost when a drift detector sees penalties staying high.</li>
+      <li><strong>Memory.</strong> The model, ledger and settings live in this browser's storage, so learning resumes where it stopped. Nothing is sent anywhere.</li>
+    </ol>
+  </div>
+  <div>
+    <h2>Limits</h2>
+    <ul>
+      <li>Minute-to-minute gold moves are mostly noise. A live skill near 0% against the no-change forecast is normal; read the forecast as a probability, not a promise.</li>
+      <li>The model only learns while this page is open. Browsers slow down background tabs, and the page catches up when you return.</li>
+      <li>Free feeds can lag, rate-limit or disappear. News indices refresh every 15 minutes at best, and India's 10-year yield has no free live feed, so it is entered by hand.</li>
+      <li>Shop rates add dealer premiums or discounts, making charges and GST. Calibrate to the rate you are quoted.</li>
+      <li>This is a research tool, not investment advice.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Sources: <a href="https://app.hyperliquid.xyz" rel="noopener">Hyperliquid</a> (trade.xyz gold, silver, Brent, S&amp;P 500, EUR, JPY; US 10-year yield market), <a href="https://gold-api.com" rel="noopener">gold-api.com</a>, <a href="https://www.coinbase.com" rel="noopener">Coinbase</a>, <a href="https://www.exchangerate-api.com" rel="noopener">ExchangeRate-API</a>, <a href="https://frankfurter.dev" rel="noopener">Frankfurter (ECB)</a>, <a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates" rel="noopener">US Treasury</a>, <a href="https://earthquake.usgs.gov" rel="noopener">USGS</a>, <a href="https://www.gdeltproject.org" rel="noopener">GDELT</a>. Deep learning by <a href="https://www.tensorflow.org/js" rel="noopener">TensorFlow.js</a>.</p>
+  <p>Default macro inputs: RBI repo 5.50% (7 Oct 2026), Fed funds 3.75–4.00% (28 Oct 2026), US CPI 3.7% and India CPI 5.54% (September 2026), import duty 15% (13 May 2026). Update them in Assumptions when they change.</p>
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/tf-backend-wasm.min.js"></script>
+<script>
+(() => {
+'use strict';
+/* =====================================================================
+   Kasauti: India gold-rate forecaster.
+   Everything runs in the visitor's browser. Each minute it pulls free
+   public market, macro and news feeds, converts them into indices,
+   forecasts the 24K rate with an LSTM plus four simpler experts, scores
+   every forecast when its time comes, and learns from the misses.
+   ===================================================================== */
+
+// ---------- helpers ----------
+const $ = (s, r = document) => r.querySelector(s);
+const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
+const isNum = x => typeof x === 'number' && Number.isFinite(x);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const yieldUI = () => new Promise(r => { const ch = new MessageChannel(); ch.port1.onmessage = () => r(); ch.port2.postMessage(0); });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const TEST = /[?&]test=1\b/.test(location.search);
+const now = () => (TEST && typeof window.__testNow === 'function' ? window.__testNow() : Date.now());
+const MIN = 60000, HOUR = 3600000, DAY = 86400000;
+const Z80 = 1.2816;
+const FONT = '"Anek Latin", ui-sans-serif, system-ui, sans-serif';
+const nf0 = new Intl.NumberFormat('en-IN', {maximumFractionDigits: 0});
+const rupees = x => (isNum(x) ? '₹' + nf0.format(Math.round(x)) : '—');
+const usd = x => (isNum(x) ? '$' + x.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—');
+const bpsTxt = x => signed(x, Math.abs(x) < 1 ? 2 : 1) + ' bps';
+const BACKEND = {wasm: 'WebAssembly', webgl: 'WebGL', cpu: 'the CPU'};
+const sgn = x => (x > 0 ? '+' : x < 0 ? '−' : '±');
+const signed = (x, d = 1) => (isNum(x) ? sgn(+x.toFixed(d)) + Math.abs(x).toFixed(d) : '—');
+const signedRs = x => (isNum(x) ? sgn(Math.round(x)) + '₹' + nf0.format(Math.abs(Math.round(x))) : '—');
+const istTime = t => new Date(t).toLocaleTimeString('en-GB', {timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit'});
+const istDay = t => new Date(t).toLocaleDateString('en-GB', {timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short'});
+function ago(t) {
+  const s = (now() - t) / 1000;
+  if (!isNum(s) || t <= 0) return 'never';
+  if (s < 75) return 'just now';
+  if (s < 5400) return Math.round(s / 60) + ' min ago';
+  if (s < 172800) return Math.round(s / 3600) + ' h ago';
+  return Math.round(s / 86400) + ' days ago';
+}
+function quantile(arr, q) { if (!arr.length) return NaN; const a = arr.slice().sort((x, y) => x - y); return a[Math.min(a.length - 1, Math.floor(q * a.length))]; }
+function phi(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989423 * Math.exp(-x * x / 2); const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - p : p; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function haversine(la1, lo1, la2, lo2) { const r = Math.PI / 180, dla = (la2 - la1) * r, dlo = (lo2 - lo1) * r; const a = Math.sin(dla / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dlo / 2) ** 2; return 12742 * Math.asin(Math.min(1, Math.sqrt(a))); }
+
+// ---------- configuration ----------
+const CFG = Object.assign({
+  lr0: 1e-3,            // base learning rate (Adam)
+  trainBudget: 40000,   // ms allowed for the first training run
+  gdeltGap: 12000,      // ms between GDELT requests (their limit is one per 5 s)
+  replay: 26,           // replayed examples per online update
+  onlineSteps: 2,       // gradient steps per minute
+  // network size and regularisation, tuned on held-out data: minute returns are mostly noise, so the net is
+  // small, sees noisy inputs, has strong weight decay and a linear path for the simple relations
+  units1: 16, units2: 8, ctx: 16, dropout: 0.3, l2: 1e-3, noise: 0.5, skip: true, lsMin: -1, lsMax: 1.5,
+  dirPen: 0.2,               // extra loss when the predicted direction is wrong
+  hw: [1, 1, 0.5, 0.25],     // loss weight per horizon (long-horizon targets overlap heavily)
+  maxEpochs: 12, patience: 2, batch: 64, dlDrop: [],
+  rlsPrior: 0.001, rlsLambda: 0.9999, rlsClip: 0.6, rlsHW: true,
+}, TEST && window.__kasautiCfg ? window.__kasautiCfg : {});
+const SCHEMA = 5;
+const H = [1, 5, 15, 60], NH = 4;
+const HNAME = ['1 minute', '5 minutes', '15 minutes', '1 hour'];
+const HSHORT = ['1 min', '5 min', '15 min', '1 h'];
+const T = 12, STEP = 5;             // LSTM reads 12 points, 5 minutes apart (the last hour)
+const WARM = 240;                   // minutes before a bar has complete features
+const KEEP = 5 * 1440;              // minute bars kept in memory
+const OZ_G = 31.1034768;
+const HL_URL = 'https://api.hyperliquid.xyz/info';
+const WASM_PATH = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.22.0/dist/';
+const COINS = {gold: 'xyz:GOLD', silver: 'xyz:SILVER', brent: 'xyz:BRENTOIL', spx: 'xyz:SP500', us10y: 'para:10Y', eur: 'xyz:EUR', jpy: 'xyz:JPY', btc: 'BTC'};
+const SERIES = Object.keys(COINS);
+const OTHER = SERIES.filter(k => k !== 'gold');
+
+// model features: [name, fit a scaler? (1) or already scaled (0)]
+const FEATS = [
+  ['g_r1', 1], ['g_r5', 1], ['g_r15', 1], ['g_r60', 1], ['g_r240', 1], ['g_vol15', 1], ['g_vol60', 1], ['g_range', 1], ['g_volu', 1], ['g_ema60', 1], ['g_rsi', 0],
+  ['s_r15', 1], ['gs_r60', 1], ['o_r15', 1], ['o_r60', 1], ['e_r15', 1], ['e_r60', 1], ['y_d15', 1], ['y_d60', 1], ['y_d240', 1], ['d_r15', 1], ['d_r60', 1], ['b_r15', 1], ['b_r60', 1],
+  ['ix_geo', 0], ['ix_epu', 0], ['ix_mon', 0], ['ix_mfg', 0], ['ix_sent', 0], ['ix_india', 0], ['ix_mine', 0], ['ix_quake', 0], ['ix_fest', 0],
+  ['sess_us', 0], ['sess_in', 0], ['closed', 0],
+];
+const F = FEATS.length;
+const FI = {}; FEATS.forEach((f, i) => { FI[f[0]] = i; });
+const FL = F + 4; // current-minute vector plus the four previous 1-minute returns
+const RLS_FEATS = ['g_r1', 'g_r5', 'g_r15', 'g_r60', 'g_vol60', 'g_ema60', 'g_rsi', 'gs_r60', 'o_r60', 'e_r60', 'y_d60', 'y_d240', 'd_r60', 'b_r60',
+  'ix_geo', 'ix_epu', 'ix_mon', 'ix_mfg', 'ix_sent', 'ix_india', 'ix_mine', 'ix_quake', 'ix_fest', 'sess_us', 'closed'].map(n => FI[n]);
+const PR = RLS_FEATS.length + 1;
+
+const EXPERTS = [
+  {k: 'dl', name: 'Deep net (LSTM)', color: 'var(--e1)'},
+  {k: 'rls', name: 'Factor model', color: 'var(--e2)'},
+  {k: 'mom', name: 'Momentum', color: 'var(--e3)'},
+  {k: 'rev', name: 'Mean reversion', color: 'var(--e4)'},
+  {k: 'rw', name: 'No change', color: 'var(--e5)'},
+];
+const NE = EXPERTS.length;
+
+// driver indices. sign: usual effect on gold; w: weight in the composite.
+// feat: model feature set directly by the index; shock: how index points map onto live market moves (per point, raw feature units)
+const IDX = [
+  {k: 'yield', name: 'Bond yield pressure', desc: 'Live US 10-year yield moves, with the Treasury real yield and India\'s 10-year G-sec.', sign: -1, w: 1.0, shock: {per: 0.4, feats: {y_d15: 0.25, y_d60: 0.6, y_d240: 1}, label: 'a 4 bp rise in the US 10-year yield'}},
+  {k: 'usd', name: 'Dollar strength', desc: 'Dollar against the euro and yen, live.', sign: -1, w: 0.8, shock: {per: 2, feats: {d_r15: 0.25, d_r60: 1}, label: 'a 0.2% rise in the dollar'}},
+  {k: 'inr', name: 'Rupee weakness', desc: 'Rupee against the dollar over 30 days. Passes straight into the rupee price.', sign: 1, w: 0.6, fx: 0.000667},
+  {k: 'oil', name: 'Energy shock', desc: 'Brent crude, live. Oil drives inflation and India\'s import bill.', sign: 1, w: 0.25, shock: {per: 10, feats: {o_r15: 0.25, o_r60: 1}, label: 'a 1% jump in Brent'}},
+  {k: 'risk', name: 'Risk appetite', desc: 'S&P 500 and bitcoin, live. Rallies pull money away from gold.', sign: -1, w: 0.4, shock: {per: 8, feats: {e_r15: 0.25, e_r60: 1, b_r15: 1, b_r60: 4}, label: 'a 0.8% rally in the S&P 500 and 3% in bitcoin'}},
+  {k: 'geo', name: 'Geopolitical risk', desc: 'Share of world news about war, sanctions and strikes, written in a negative tone.', sign: 1, w: 0.6, feat: 'ix_geo'},
+  {k: 'epu', name: 'Political and policy uncertainty', desc: 'News about uncertainty over tariffs, elections, shutdowns and deficits.', sign: 1, w: 0.4, feat: 'ix_epu'},
+  {k: 'mon', name: 'Rate-cut expectations', desc: 'Rate-cut stories versus rate-hike stories in world news.', sign: 1, w: 0.6, feat: 'ix_mon'},
+  {k: 'mfg', name: 'Manufacturing and supply-chain stress', desc: 'Negative news on factory output, shortages and supply chains.', sign: 1, w: 0.2, feat: 'ix_mfg'},
+  {k: 'quake', name: 'Geological risk at mining belts', desc: 'Earthquakes of magnitude 4.5+, weighted by distance to the main gold mines.', sign: 1, w: 0.15, feat: 'ix_quake'},
+  {k: 'mine', name: 'Mine disruption news', desc: 'Stories about gold-mine strikes, collapses and closures.', sign: 1, w: 0.15, feat: 'ix_mine'},
+  {k: 'sent', name: 'Gold news sentiment', desc: 'Average tone of news about gold prices.', sign: 1, w: 0.4, feat: 'ix_sent'},
+  {k: 'india', name: 'India gold news', desc: 'Volume of Indian news about gold and jewellery.', sign: 1, w: 0.2, feat: 'ix_india'},
+  {k: 'fest', name: 'Festive and wedding demand', desc: 'Dhanteras, Diwali, Akshaya Tritiya, Pushya days and wedding seasons.', sign: 1, w: 0.25, feat: 'ix_fest'},
+];
+const NI = IDX.length;
+const II = {}; IDX.forEach((d, i) => { II[d.k] = i; });
+const IXF = ['geo', 'epu', 'mon', 'mfg', 'sent', 'india', 'mine', 'quake', 'fest'];
+
+// GDELT news themes (DOC 2.0 API, fetched by JSONP)
+const THEMES = [
+  // alt: a simpler query used if GDELT rejects the main one
+  {k: 'geo', q: '(war OR sanctions OR missile OR airstrike OR invasion OR blockade) tone<-3', alt: '(war OR sanctions OR missile OR airstrike) tone<-3', mode: 'timelinevol'},
+  {k: 'epu', q: 'uncertainty (tariff OR tariffs OR election OR shutdown OR deficit OR "trade war")', alt: '"policy uncertainty"', mode: 'timelinevol'},
+  {k: 'dove', q: '("rate cut" OR "rate cuts" OR dovish OR "monetary easing")', alt: '"rate cut"', mode: 'timelinevol'},
+  {k: 'hawk', q: '("rate hike" OR "rate hikes" OR hawkish OR "monetary tightening")', alt: '"rate hike"', mode: 'timelinevol'},
+  {k: 'mfg', q: '("supply chain" OR "factory output" OR "industrial production" OR "manufacturing pmi" OR shortage) tone<-2', alt: '"supply chain" tone<-2', mode: 'timelinevol'},
+  {k: 'sent', q: '("gold price" OR "gold prices" OR bullion)', alt: '"gold price"', mode: 'timelinetone'},
+  {k: 'india', q: '(gold OR jewellery OR jewelry) sourcecountry:india', alt: '"gold price" india', mode: 'timelinevol'},
+  {k: 'mine', q: '("gold mine" OR "mine collapse" OR "mining strike" OR "mine closure" OR "mine shutdown")', alt: '"gold mine"', mode: 'timelinevol'},
+];
+
+// gold-mining belts: [name, lat, lon, approximate share of world mine output]
+const MINES = [
+  ['Shandong, China', 37.4, 120.4, 0.05], ['Henan and Inner Mongolia, China', 34.5, 111.5, 0.04], ['Magadan and Chukotka, Russia', 61.0, 152.0, 0.04],
+  ['Krasnoyarsk and Irkutsk, Russia', 58.5, 98.0, 0.05], ['Kalgoorlie, Australia', -30.75, 121.47, 0.05], ['Pilbara, Australia', -22.5, 119.0, 0.03],
+  ['Ontario and Quebec, Canada', 48.5, -79.5, 0.04], ['British Columbia, Canada', 56.0, -128.0, 0.015], ['Nevada, USA', 40.7, -116.5, 0.04],
+  ['Alaska, USA', 64.5, -147.0, 0.01], ['Sonora and Zacatecas, Mexico', 28.5, -108.0, 0.035], ['Grasberg, Papua', -4.05, 137.11, 0.035],
+  ['Lihir and Porgera, PNG', -4.5, 148.5, 0.015], ['Peruvian Andes', -8.0, -77.8, 0.03], ['Atacama, Chile', -26.5, -69.8, 0.01],
+  ['San Juan and Santa Cruz, Argentina', -35.0, -69.0, 0.01], ['Minas Gerais and Pará, Brazil', -15.0, -50.0, 0.02], ['Antioquia, Colombia', 6.8, -75.3, 0.01],
+  ['Witwatersrand, South Africa', -26.3, 27.5, 0.03], ['Ashanti, Ghana', 6.2, -1.7, 0.04], ['Mali and Burkina Faso', 12.5, -6.0, 0.04],
+  ['Sudan', 19.0, 33.0, 0.02], ['Lake Victoria, Tanzania', -3.0, 32.5, 0.015], ['Muruntau, Uzbekistan', 41.5, 64.6, 0.03],
+  ['Kazakhstan', 49.0, 72.0, 0.02], ['Kumtor, Kyrgyzstan', 41.86, 78.19, 0.008], ['Mindanao, Philippines', 9.5, 125.5, 0.008], ['Karnataka, India', 15.9, 76.7, 0.002],
+];
+
+// Indian buying occasions (IST dates)
+const FEST = [
+  ['2026-11-06', 1.00, 'Dhanteras'], ['2026-11-08', 0.75, 'Diwali'], ['2026-11-11', 0.35, 'Pushya Nakshatra'], ['2026-12-08', 0.35, 'Pushya Nakshatra'],
+  ['2027-01-14', 0.30, 'Makar Sankranti'], ['2027-04-07', 0.40, 'Gudi Padwa and Ugadi'], ['2027-05-09', 0.95, 'Akshaya Tritiya'],
+  ['2027-10-27', 1.00, 'Dhanteras'], ['2027-10-29', 0.75, 'Diwali'],
+];
+const SEASONS = [['2026-11-20', '2026-12-14', 0.45, 'Wedding season'], ['2027-01-16', '2027-03-10', 0.45, 'Wedding season'], ['2027-04-15', '2027-06-30', 0.35, 'Wedding season']];
+
+const DEFAULTS = {duty: 15, gst: 3, prem: 0, fxOverride: '', in10y: 7.35, repo: 5.50, fed: 4.00, usCpi: 3.7, inCpi: 5.54, incGst: false, calibAt: 0};
+const FIELDS = [
+  {k: 'duty', label: 'Import duty (%)', note: '10% basic customs duty plus 5% AIDC, in force since 13 May 2026.', step: 0.25},
+  {k: 'gst', label: 'GST (%)', note: 'Added only when Include GST is ticked on the board.', step: 0.5},
+  {k: 'prem', label: 'Local premium or discount (%)', note: 'Gap between your city\'s quoted rate and the landed cost. Calibrate sets it for you.', step: 0.05},
+  {k: 'fxOverride', label: 'USD/INR override', note: 'Leave blank to use the live median of three sources.', step: 0.01, blank: true},
+  {k: 'in10y', label: 'India 10-year G-sec yield (%)', note: 'No free live feed. It traded around 7.3–7.4% in mid-October 2026.', step: 0.01},
+  {k: 'repo', label: 'RBI repo rate (%)', note: 'Raised to 5.50% on 7 Oct 2026. Next decision on 4 Dec.', step: 0.25},
+  {k: 'fed', label: 'US Fed funds, upper bound (%)', note: 'Held at 3.75–4.00% on 28 Oct 2026. Next decision on 9 Dec.', step: 0.25},
+  {k: 'usCpi', label: 'US CPI inflation (%)', note: 'September 2026: 3.7% year on year.', step: 0.1},
+  {k: 'inCpi', label: 'India CPI inflation (%)', note: 'September 2026: 5.54% year on year.', step: 0.01},
+];
+
+// ---------- state ----------
+const S = {
+  set: Object.assign({}, DEFAULTS),
+  bars: [], pending: [], ledger: [], penSeries: [], log: [],
+  metrics: H.map(() => newMetric()),
+  hedge: H.map(() => Array(NE).fill(1 / NE)),
+  rls: null, norm: null, ys: null, cal: [1, 1, 1, 1],
+  pen: {s: 1, l: 1, n: 0, ph: {n: 0, mean: 0, m: 0, M: 0}, boostUntil: 0, cumM: 0, cumN: 0},
+  basis: 1, basisInit: false, spot: null, spotAt: 0, silverSpot: null,
+  usdinr: null, fxSrc: '', fxAt: 0, fxHist: null, fxHistAt: 0, dxy: null,
+  tsy: null, tsyAt: 0, gd: {}, quakes: [], quakesAt: 0,
+  cnt: {steps: 0, checks: 0, misses: 0, points: 0},
+  goldSrc: null, goldScale: 1, goldFails: 0,
+  fc: null, sens: null, boot: null, scen: {},
+  model: null, opt: null, backend: '', modelReady: false, training: false,
+  busy: false, ixDirty: true, nextTickAt: 0, lastSave: 0, chartRange: 180, ledgerH: 'all',
+  lastLR: null, lastLoss: null, frozen: false,
+};
+function newMetric() { return {n: 0, se: 0, seN: 0, ae: 0, dn: 0, dh: 0, band: 0, pen: 0, penN: 0, rec: []}; }
+
+const FEEDS = {
+  hl: {name: 'Hyperliquid (trade.xyz)', use: 'Gold, silver, Brent, S&P 500, euro, yen, bitcoin and the US 10-year yield, every minute'},
+  spot: {name: 'gold-api.com', use: 'Spot gold and silver, to anchor the board to the spot price'},
+  fx: {name: 'Coinbase, ExchangeRate-API, Frankfurter', use: 'USD/INR (median of the three) and a dollar index'},
+  tsy: {name: 'US Treasury', use: 'Daily nominal and real (TIPS) yield curves'},
+  usgs: {name: 'USGS', use: 'Earthquakes of magnitude 4.5+ near gold-mining belts'},
+  gdelt: {name: 'GDELT', use: 'World news volume and tone for the news indices'},
+  tf: {name: 'TensorFlow.js', use: 'Deep learning in the browser'},
+};
+function feed(k, ok, msg) { const f = FEEDS[k]; f.ok = ok; f.msg = msg || ''; if (ok) f.at = now(); f.tried = now(); }
+
+function log(text, kind) {
+  S.log.unshift({t: now(), text, kind: kind || ''});
+  if (S.log.length > 150) S.log.length = 150;
+}
+
+// ---------- storage (IndexedDB) ----------
+const IDB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('kasauti', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => { this.db = r.result; res(this.db); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async get(k) { try { const db = await this.open(); return await new Promise((res, rej) => { const q = db.transaction('kv', 'readonly').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) { return undefined; } },
+  async set(k, v) { try { const db = await this.open(); await new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); }); return true; } catch (e) { return false; } },
+  async clear() { try { const db = await this.open(); await new Promise(res => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').clear(); tx.oncomplete = () => res(); tx.onerror = () => res(); }); } catch (e) { /* ignore */ } },
+};
+const MODEL_URL = 'indexeddb://kasauti-goldnet-v' + SCHEMA;
+
+// ---------- network ----------
+async function http(url, opt, ms) {
+  const ctl = new AbortController();
+  const id = setTimeout(() => ctl.abort(), ms || 15000);
+  try {
+    const r = await fetch(url, Object.assign({cache: 'no-store', signal: ctl.signal}, opt || {}));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r;
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw new Error('timed out');
+    throw new Error(e && e.message ? e.message : 'network error');
+  } finally { clearTimeout(id); }
+}
+const getJSON = (u, o, ms) => http(u, o, ms).then(r => r.json());
+const getText = (u, o, ms) => http(u, o, ms).then(r => r.text());
+let jpN = 0;
+function jsonp(url, ms) {
+  return new Promise((res, rej) => {
+    const name = '__kasautiJP' + (++jpN) + '_' + Math.floor(Math.random() * 1e6);
+    const sc = document.createElement('script');
+    let done = false;
+    const fin = () => { done = true; clearTimeout(to); window[name] = function () {}; sc.remove(); };
+    const to = setTimeout(() => { if (!done) { fin(); rej(new Error('timed out')); } }, ms || 40000);
+    window[name] = d => { if (!done) { fin(); res(d); } };
+    sc.onerror = () => { if (!done) { fin(); rej(new Error('rate-limited or blocked')); } };
+    sc.onload = () => { setTimeout(() => { if (!done) { fin(); rej(new Error('unexpected reply')); } }, 0); };
+    sc.src = url + '&callback=' + name;
+    document.head.appendChild(sc);
+  });
+}
+
+async function hlCandles(coin, start, end) {
+  const d = await getJSON(HL_URL, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({type: 'candleSnapshot', req: {coin, interval: '1m', startTime: Math.floor(start), endTime: Math.floor(end)}})}, 20000);
+  if (!Array.isArray(d)) throw new Error('unexpected reply');
+  return d.map(k => ({t: +k.t, o: +k.o, h: +k.h, l: +k.l, c: +k.c, v: +k.v})).filter(k => isNum(k.c) && k.c > 0);
+}
+async function bybitXaut(start, end) {
+  const out = []; let e = Math.floor(end);
+  for (let p = 0; p < 6 && e > start; p++) {
+    const d = await getJSON('https://api.bybit.com/v5/market/kline?category=linear&symbol=XAUTUSDT&interval=1&limit=1000&end=' + e, null, 15000);
+    const L = (d && d.result && d.result.list) || [];
+    if (!L.length) break;
+    for (const k of L) out.push({t: +k[0], o: +k[1], h: +k[2], l: +k[3], c: +k[4], v: +k[5]});
+    e = +L[L.length - 1][0] - 1;
+  }
+  return out.filter(k => k.t >= start && isNum(k.c)).sort((a, b) => a.t - b.t);
+}
+async function goldFrom(src, start, end) { return src === 'XAUT' ? bybitXaut(start, end) : hlCandles(src, start, end); }
+
+// Gold source is sticky: switching between perp, PAXG and XAUT would create fake jumps, so levels are rescaled when it happens.
+async function fetchGold(start, end, isBoot) {
+  if (S.goldSrc && !isBoot) {
+    try { const c = await goldFrom(S.goldSrc, start, end); if (c.length) { S.goldFails = 0; return c; } throw new Error('no candles'); }
+    catch (e) { S.goldFails++; if (S.goldFails < 5) throw e; }
+  }
+  const order = ['xyz:GOLD', 'PAXG', 'XAUT'].filter(s => isBoot || s !== S.goldSrc);
+  let err = null;
+  for (const src of order) {
+    try {
+      const c = await goldFrom(src, start, end);
+      if (!c.length) throw new Error('no candles');
+      const lb = lastBar();
+      if (S.goldSrc && src !== S.goldSrc && lb) {
+        const ref = c.find(k => k.t >= lb.t) || c[c.length - 1];
+        S.goldScale = lb.gold / ref.c;
+        log('Gold feed switched to ' + src + '. Levels were rescaled to avoid a fake jump.', 'warn');
+      } else if (!S.goldSrc || src !== S.goldSrc) S.goldScale = 1;
+      S.goldSrc = src; S.goldFails = 0;
+      return c;
+    } catch (e) { err = e; }
+  }
+  throw err || new Error('gold feed unavailable');
+}
+async function fetchSeries(start, end, isBoot) {
+  const out = {}; const errs = [];
+  await Promise.all(SERIES.map(async k => {
+    try { out[k] = k === 'gold' ? await fetchGold(start, end, isBoot) : await hlCandles(COINS[k], start, end); }
+    catch (e) { out[k] = []; errs.push(k + ': ' + e.message); }
+  }));
+  if (out.gold.length) feed('hl', true, errs.length ? 'Missing: ' + errs.join('; ') : 'All 8 markets updating (gold from ' + S.goldSrc + ')');
+  else feed('hl', false, errs.join('; '));
+  return out;
+}
+
+async function refreshSpot() {
+  try {
+    const [g, s] = await Promise.all([getJSON('https://api.gold-api.com/price/XAU', null, 10000), getJSON('https://api.gold-api.com/price/XAG', null, 10000).catch(() => null)]);
+    const p = +g.price, at = Date.parse(g.updatedAt) || now();
+    if (!isNum(p) || p <= 0) throw new Error('bad price');
+    S.spot = p; S.spotAt = at;
+    if (s && isNum(+s.price)) S.silverSpot = +s.price;
+    const lb = lastBar();
+    const fresh = now() - at < 10 * MIN;
+    if (fresh && lb && isNum(lb.gold)) {
+      const ratio = p / lb.gold;
+      if (ratio > 0.95 && ratio < 1.05) { S.basis = S.basisInit ? 0.85 * S.basis + 0.15 * ratio : ratio; S.basisInit = true; }
+    }
+    feed('spot', true, fresh ? 'Spot ' + usd(p) + ' per oz' : 'Spot market closed; last price ' + usd(p));
+  } catch (e) { feed('spot', false, e.message); }
+}
+
+async function refreshFx(force) {
+  if (!force && now() - S.fxAt < 10 * MIN) return;
+  const vals = [], src = [];
+  await Promise.allSettled([
+    getJSON('https://api.coinbase.com/v2/exchange-rates?currency=USD', null, 12000).then(d => {
+      const r = d.data.rates; const inr = +r.INR;
+      if (isNum(inr)) { vals.push(inr); src.push('Coinbase'); }
+      const dxy = 50.14348112 * Math.pow(1 / +r.EUR, -0.576) * Math.pow(+r.JPY, 0.136) * Math.pow(1 / +r.GBP, -0.119) * Math.pow(+r.CAD, 0.091) * Math.pow(+r.SEK, 0.042) * Math.pow(+r.CHF, 0.036);
+      if (isNum(dxy)) S.dxy = dxy;
+    }),
+    getJSON('https://open.er-api.com/v6/latest/USD', null, 12000).then(d => { const v = +d.rates.INR; if (isNum(v)) { vals.push(v); src.push('ExchangeRate-API'); } }),
+    getJSON('https://api.frankfurter.dev/v1/latest?base=USD&symbols=INR', null, 12000).then(d => { const v = +d.rates.INR; if (isNum(v)) { vals.push(v); src.push('ECB'); } }),
+  ]);
+  if (vals.length) {
+    vals.sort((a, b) => a - b);
+    const n = vals.length;
+    S.usdinr = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+    S.fxSrc = src.join(', '); S.fxAt = now();
+    feed('fx', true, '₹' + S.usdinr.toFixed(2) + ' per $ from ' + S.fxSrc);
+  } else feed('fx', false, 'All three USD/INR sources failed; using the last known rate');
+  if (!S.fxHist || now() - S.fxHistAt > 6 * HOUR) {
+    try {
+      const start = new Date(now() - 40 * DAY).toISOString().slice(0, 10);
+      const d = await getJSON('https://api.frankfurter.dev/v1/' + start + '..?base=USD&symbols=INR', null, 12000);
+      const pts = Object.entries(d.rates || {}).map(([k, v]) => [Date.parse(k + 'T16:00:00Z'), +v.INR]).filter(p => isNum(p[0]) && isNum(p[1])).sort((a, b) => a[0] - b[0]);
+      if (pts.length > 5) { S.fxHist = pts; S.fxHistAt = now(); S.ixDirty = true; }
+    } catch (e) { /* history is optional */ }
+  }
+}
+function usdinr() { const o = parseFloat(S.set.fxOverride); return isNum(o) && o > 40 && o < 250 ? o : (S.usdinr || 94.5); }
+
+function parseCsv(txt) {
+  const lines = String(txt || '').trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const hdr = lines[0].split(',').map(s => s.replace(/"/g, '').trim().toLowerCase());
+  return lines.slice(1).map(l => { const c = l.split(','); const o = {}; hdr.forEach((h, i) => { o[h] = (c[i] || '').replace(/"/g, '').trim(); }); return o; });
+}
+async function refreshTreasury() {
+  if (S.tsy && now() - S.tsyAt < 3 * HOUR) return;
+  const base = 'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/';
+  const url = (y, t) => base + y + '/all?type=' + t + '&field_tdr_date_value=' + y + '&page&_format=csv';
+  try {
+    let y = new Date(now()).getUTCFullYear();
+    let nom = parseCsv(await getText(url(y, 'daily_treasury_yield_curve'), null, 20000));
+    if (nom.length < 6) { y -= 1; nom = nom.concat(parseCsv(await getText(url(y, 'daily_treasury_yield_curve'), null, 20000))); }
+    let real = [];
+    try { real = parseCsv(await getText(url(y, 'daily_treasury_real_yield_curve'), null, 20000)); } catch (e) { /* optional */ }
+    const r0 = nom[0], r5 = nom[Math.min(5, nom.length - 1)];
+    const t = {date: r0.date, y10: +r0['10 yr'], y2: +r0['2 yr'], y10p: +r5['10 yr']};
+    if (real.length) { t.r10 = +real[0]['10 yr']; t.r10p = +real[Math.min(5, real.length - 1)]['10 yr']; t.rdate = real[0].date; }
+    if (!isNum(t.y10)) throw new Error('unexpected format');
+    S.tsy = t; S.tsyAt = now();
+    feed('tsy', true, '10-year ' + t.y10.toFixed(2) + '%' + (isNum(t.r10) ? ', real ' + t.r10.toFixed(2) + '%' : '') + ' on ' + t.date);
+  } catch (e) { feed('tsy', false, e.message); }
+}
+
+function quakeImpact(q) {
+  let s = 0, best = null, bd = Infinity;
+  for (const [nm, la, lo, w] of MINES) {
+    const d = haversine(q.lat, q.lon, la, lo);
+    if (d < bd) { bd = d; best = nm; }
+    if (d < 900) s += w * Math.exp(-d / 200);
+  }
+  q.near = best; q.dist = bd; q.imp = s * Math.pow(10, 1.5 * (q.mag - 5));
+  return q.imp;
+}
+async function refreshQuakes() {
+  if (now() - S.quakesAt < 5 * MIN) return;
+  try {
+    const d = await getJSON('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson', null, 15000);
+    const m = new Map(S.quakes.map(x => [x.id, x]));
+    for (const f of d.features || []) {
+      const q = {id: f.id, t: +f.properties.time, mag: +f.properties.mag, place: f.properties.place || '', lon: +f.geometry.coordinates[0], lat: +f.geometry.coordinates[1]};
+      if (isNum(q.mag) && isNum(q.lat) && isNum(q.t)) { quakeImpact(q); m.set(q.id, q); }
+    }
+    S.quakes = [...m.values()].filter(x => now() - x.t < 10 * DAY).sort((a, b) => a.t - b.t);
+    S.quakesAt = now(); S.ixDirty = true;
+    feed('usgs', true, S.quakes.length + ' quakes of M4.5+ in the past week');
+  } catch (e) { feed('usgs', false, e.message); }
+}
+
+// ---------- GDELT news indices ----------
+function gdeltDate(s) { const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(s || ''); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : NaN; }
+function zSeries(P) {
+  const z = new Array(P.length).fill(null);
+  for (let j = 0; j < P.length; j++) {
+    let n = 0, s = 0, s2 = 0;
+    for (let k = j - 1; k >= 0 && P[j][0] - P[k][0] <= 7 * DAY; k--) { n++; s += P[k][1]; s2 += P[k][1] * P[k][1]; }
+    if (n >= 6) { const m = s / n, sd = Math.sqrt(Math.max(s2 / n - m * m, 0)); z[j] = sd > 1e-9 ? clamp((P[j][1] - m) / sd, -4, 4) : 0; }
+  }
+  return z;
+}
+function mergeGd(key, pts) {
+  const g = S.gd[key] || (S.gd[key] = {pts: []});
+  const m = new Map(g.pts.map(p => [p[0], p[1]]));
+  for (const p of pts) m.set(p[0], p[1]);
+  const cut = now() - 9 * DAY;
+  g.pts = [...m.entries()].filter(p => p[0] >= cut).sort((a, b) => a[0] - b[0]);
+  const d = []; for (let k = 1; k < g.pts.length; k++) d.push(g.pts[k][0] - g.pts[k - 1][0]);
+  d.sort((a, b) => a - b);
+  g.res = d.length ? clamp(d[d.length >> 1], 15 * MIN, 6 * HOUR) : HOUR;
+  g.z = zSeries(g.pts); g.at = now(); g.err = null; g.fails = 0;
+  if (key === 'dove' || key === 'hawk') buildMon();
+}
+function buildMon() {
+  const d = S.gd.dove, h = S.gd.hawk;
+  if (!d || !h || !d.pts.length || !h.pts.length) return;
+  const hm = new Map(h.pts.map(p => [p[0], p[1]]));
+  const pts = [];
+  for (const [t, v] of d.pts) { const hv = hm.get(t); if (isNum(hv) && v + hv > 0) pts.push([t, v / (v + hv)]); }
+  S.gd.mon = {pts, res: d.res, z: zSeries(pts), at: Math.min(d.at || 0, h.at || 0)};
+}
+function gdIndexOf(key, t) {
+  const g = S.gd[key];
+  if (!g || !g.pts || !g.pts.length) return -1;
+  const P = g.pts, res = g.res || HOUR;
+  let lo = 0, hi = P.length - 1, ans = -1;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (P[mid][0] + res <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+  return ans;
+}
+function gdZ(key, t) { const j = gdIndexOf(key, t); if (j < 0) return null; const z = S.gd[key].z; return z ? z[j] : null; }
+const GD = {backoff: 0, running: false, done: 0};
+async function gdeltLoop() {
+  if (GD.running) return; GD.running = true;
+  for (;;) {
+    const tn = now();
+    let pick = null, age = -1;
+    for (const th of THEMES) {
+      const g = S.gd[th.k];
+      const a = g && g.at ? tn - g.at : Infinity;
+      const wait = g && g.retryAt ? g.retryAt > tn : false;
+      if (!wait && a > 15 * MIN && a > age) { age = a; pick = th; }
+    }
+    if (!pick) { await sleep(TEST ? 500 : 20000); continue; }
+    try {
+      const g0 = S.gd[pick.k], q = g0 && g0.useAlt && pick.alt ? pick.alt : pick.q;
+      const url = 'https://api.gdeltproject.org/api/v2/doc/doc?query=' + encodeURIComponent(q) + '&mode=' + pick.mode + '&timespan=7d&format=jsonp';
+      const d = await jsonp(url, 45000);
+      const s = d && d.timeline && d.timeline[0];
+      const pts = s && Array.isArray(s.data) ? s.data.map(p => [gdeltDate(p.date), +p.value]).filter(p => isNum(p[0]) && isNum(p[1])) : [];
+      if (!pts.length) throw new Error('empty timeline');
+      mergeGd(pick.k, pts);
+      GD.backoff = 0; GD.done++; S.ixDirty = true;
+      feed('gdelt', true, Object.keys(S.gd).filter(k => S.gd[k].pts && S.gd[k].pts.length && k !== 'mon').length + ' of ' + THEMES.length + ' news themes loaded');
+    } catch (e) {
+      const g = S.gd[pick.k] || (S.gd[pick.k] = {pts: []});
+      g.fails = (g.fails || 0) + 1; g.err = e.message;
+      if (e.message === 'unexpected reply' || e.message === 'empty timeline') {
+        // the query itself was refused: fall back to the simpler wording, otherwise wait an hour
+        if (pick.alt && !g.useAlt) { g.useAlt = true; g.retryAt = now() + 20000; }
+        else g.retryAt = now() + 60 * MIN;
+        feed('gdelt', false, pick.k + ': GDELT refused the query' + (g.useAlt ? '; trying a simpler one' : ''));
+      } else {
+        GD.backoff = clamp(GD.backoff ? GD.backoff * 2 : 60000, 60000, 20 * MIN);
+        g.retryAt = now() + Math.min(60 * MIN, GD.backoff * g.fails);
+        feed('gdelt', false, pick.k + ': ' + e.message + '. Retrying in ' + Math.round(GD.backoff / 60000) + ' min');
+        await sleep(TEST ? 300 : GD.backoff);
+      }
+    }
+    await sleep(CFG.gdeltGap);
+  }
+}
+
+// ---------- calendar, FX and market indices ----------
+const istMidnight = d => Date.parse(d + 'T00:00:00+05:30');
+function festAt(t) {
+  let best = 0, label = '';
+  for (const [d, w, name] of FEST) {
+    const days = (istMidnight(d) - t) / DAY;
+    let k = 0;
+    if (days > -1 && days <= 0) k = 1;
+    else if (days > 0 && days <= 12) k = 1 - days / 13;
+    else if (days <= -1 && days > -3) k = (days + 3) / 2;
+    if (w * k > best) {
+      best = w * k;
+      const n = Math.ceil(days);
+      label = days > 0 ? name + ' in ' + n + (n > 1 ? ' days' : ' day') : days > -1 ? name + ' today' : name + ' just passed';
+    }
+  }
+  for (const [a, b, w, name] of SEASONS) {
+    const ta = istMidnight(a), tb = istMidnight(b) + DAY;
+    if (t >= ta && t < tb && w > best) { best = w; label = name + ' until ' + istDay(tb - DAY); }
+  }
+  return {v: 100 * best, label: label || 'No major buying occasion in the next two weeks'};
+}
+function quakeIndexAt(t) {
+  if (!S.quakesAt) return NaN;
+  let Q = 0;
+  for (const q of S.quakes) { if (q.t > t) break; const age = (t - q.t) / HOUR; if (age > 168) continue; Q += (isNum(q.imp) ? q.imp : quakeImpact(q)) * Math.exp(-age / 72); }
+  return 100 * (1 - Math.exp(-Q / 2));
+}
+function fxAt(t) { const P = S.fxHist; if (!P || !P.length) return NaN; let v = NaN; for (const p of P) { if (p[0] <= t) v = p[1]; else break; } return v; }
+function inrIndexAt(t) { const a = fxAt(t), b = fxAt(t - 30 * DAY); return isNum(a) && isNum(b) ? clamp(50 + 15 * 100 * Math.log(a / b), 0, 100) : NaN; }
+function dollarLog(b) { return isNum(b.eur) && isNum(b.jpy) && b.eur > 0 && b.jpy > 0 ? (-0.576 * Math.log(b.eur) + 0.136 * Math.log(b.jpy)) / 0.712 : NaN; }
+function marketClosed(t) { const d = new Date(t); const dow = d.getUTCDay(), hr = d.getUTCHours() + d.getUTCMinutes() / 60; return dow === 6 || (dow === 5 && hr >= 22) || (dow === 0 && hr < 22); }
+
+function indexValuesAt(i) {
+  const B = S.bars, b = B[i], t = b.t, v = new Float32Array(NI).fill(NaN);
+  const b0 = B[Math.max(0, i - 1440)];
+  if (i >= 60) {
+    if (isNum(b.us10y) && isNum(b0.us10y)) v[II.yield] = clamp(50 + 2.5 * (b.us10y - b0.us10y) * 100, 0, 100);
+    const dl = dollarLog(b), dl0 = dollarLog(b0);
+    if (isNum(dl) && isNum(dl0)) v[II.usd] = clamp(50 + 0.5 * (dl - dl0) * 1e4, 0, 100);
+    if (isNum(b.brent) && isNum(b0.brent)) v[II.oil] = clamp(50 + 1000 * Math.log(b.brent / b0.brent), 0, 100);
+    let rk = 0, rn = 0;
+    if (isNum(b.spx) && isNum(b0.spx)) { rk += 800 * Math.log(b.spx / b0.spx); rn++; }
+    if (isNum(b.btc) && isNum(b0.btc)) { rk += 150 * Math.log(b.btc / b0.btc); rn++; }
+    if (rn) v[II.risk] = clamp(50 + rk, 0, 100);
+  }
+  v[II.inr] = inrIndexAt(t);
+  for (const k of ['geo', 'epu', 'mfg', 'mine', 'india', 'sent', 'mon']) { const z = gdZ(k, t); if (z !== null && isNum(z)) v[II[k]] = clamp(50 + 15 * z, 0, 100); }
+  v[II.quake] = quakeIndexAt(t);
+  v[II.fest] = festAt(t).v;
+  return v;
+}
+function computeIndices() {
+  const B = S.bars;
+  if (S.ixDirty) { for (let i = 0; i < B.length; i++) B[i].ix = indexValuesAt(i); S.ixDirty = false; }
+  else for (let i = 0; i < B.length; i++) if (!B[i].ix) B[i].ix = indexValuesAt(i);
+}
+function composite(ix) {
+  let s = 0, w = 0;
+  IDX.forEach((d, k) => { const v = ix[k]; if (isNum(v)) { s += d.sign * d.w * (v - 50) / 50; w += d.w; } });
+  return w ? clamp(50 + 50 * s / w, 0, 100) : NaN;
+}
+
+// ---------- minute bars and features ----------
+const lastBar = () => S.bars[S.bars.length - 1];
+const lastCompleteMinute = () => Math.floor((now() - 3000) / MIN) * MIN - MIN;
+function idxOfT(t) { const B = S.bars; if (!B.length) return -1; const i = Math.round((t - B[0].t) / MIN); return i >= 0 && i < B.length && B[i].t === t ? i : -1; }
+function extendBars(cs, lc) {
+  const B = S.bars;
+  const maps = {};
+  for (const k of SERIES) { const m = new Map(); for (const c of cs[k] || []) if (c.t <= lc) m.set(c.t, c); maps[k] = m; }
+  const fill = (b, prev, revise) => {
+    const g = maps.gold.get(b.t);
+    if (g) { b.gold = g.c * S.goldScale; b.gh = g.h * S.goldScale; b.gl = g.l * S.goldScale; b.gv = g.v; }
+    else if (!revise) { b.gold = prev ? prev.gold : NaN; b.gh = b.gold; b.gl = b.gold; b.gv = 0; }
+    for (const k of OTHER) { const c = maps[k].get(b.t); if (c) b[k] = c.c; else if (!revise) b[k] = prev ? prev[k] : NaN; }
+  };
+  for (let j = Math.max(0, B.length - 3); j < B.length; j++) { const before = B[j].gold; fill(B[j], B[j - 1], true); if (B[j].gold !== before) B[j].ix = null; }
+  const added = [];
+  let t;
+  if (B.length) t = B[B.length - 1].t + MIN;
+  else { const gs = [...maps.gold.keys()].sort((a, b) => a - b); if (!gs.length) return added; t = gs[0]; }
+  for (; t <= lc; t += MIN) {
+    const prev = B[B.length - 1];
+    const b = {t, p: 1};
+    fill(b, prev, false);
+    if (!isNum(b.gold)) continue;
+    if (!prev) for (const k of OTHER) if (!isNum(b[k])) { const first = (cs[k] || []).find(c => c.t >= t); b[k] = first ? first.c : NaN; }
+    B.push(b); added.push(B.length - 1);
+  }
+  return added;
+}
+function trimBars() {
+  const over = S.bars.length - KEEP;
+  if (over > 0) S.bars.splice(0, over);
+  return over > 0 ? over : 0;
+}
+function computeFeatures() {
+  const B = S.bars, N = B.length;
+  if (!N) return;
+  const lg = new Float64Array(N), r1 = new Float64Array(N);
+  for (let i = 0; i < N; i++) lg[i] = Math.log(B[i].gold);
+  for (let i = 1; i < N; i++) r1[i] = (lg[i] - lg[i - 1]) * 1e4;
+  const c1 = new Float64Array(N + 1), c2 = new Float64Array(N + 1);
+  for (let i = 0; i < N; i++) { c1[i + 1] = c1[i] + r1[i]; c2[i + 1] = c2[i] + r1[i] * r1[i]; }
+  const rstd = (i, w) => { const a = Math.max(1, i - w + 1), n = i - a + 1; if (n < 2) return 0; const s = c1[i + 1] - c1[a], s2 = c2[i + 1] - c2[a]; return Math.sqrt(Math.max(0, s2 / n - (s / n) * (s / n))); };
+  const ret = (k, i, h) => { const j = i - h; if (j < 0) return 0; const a = B[i][k], b = B[j][k]; return isNum(a) && isNum(b) && a > 0 && b > 0 ? Math.log(a / b) * 1e4 : 0; };
+  const ydiff = (i, h) => { const j = i - h; if (j < 0) return 0; const a = B[i].us10y, b = B[j].us10y; return isNum(a) && isNum(b) ? (a - b) * 100 : 0; };
+  const dret = (i, h) => { const j = i - h; if (j < 0) return 0; const a = dollarLog(B[i]), b = dollarLog(B[j]); return isNum(a) && isNum(b) ? (a - b) * 1e4 : 0; };
+  let ema = lg[0], vEma = 0, up = 0, dn = 0;
+  for (let i = 0; i < N; i++) {
+    const b = B[i];
+    const f = b.f && b.f.length === F ? b.f : (b.f = new Float32Array(F));
+    ema = i ? ema + (2 / 61) * (lg[i] - ema) : lg[0];
+    const lv = Math.log1p(b.gv > 0 ? b.gv : 0);
+    vEma = i ? vEma + (2 / 61) * (lv - vEma) : lv;
+    const r = r1[i];
+    up += (Math.max(r, 0) - up) / 14; dn += (Math.max(-r, 0) - dn) / 14;
+    f[FI.g_r1] = r;
+    f[FI.g_r5] = (lg[i] - lg[Math.max(0, i - 5)]) * 1e4;
+    f[FI.g_r15] = (lg[i] - lg[Math.max(0, i - 15)]) * 1e4;
+    f[FI.g_r60] = (lg[i] - lg[Math.max(0, i - 60)]) * 1e4;
+    f[FI.g_r240] = (lg[i] - lg[Math.max(0, i - 240)]) * 1e4;
+    f[FI.g_vol15] = rstd(i, 15);
+    f[FI.g_vol60] = rstd(i, 60);
+    f[FI.g_range] = b.gh > 0 && b.gl > 0 ? Math.log(b.gh / b.gl) * 1e4 : 0;
+    f[FI.g_volu] = lv - vEma;
+    f[FI.g_ema60] = (lg[i] - ema) * 1e4;
+    f[FI.g_rsi] = up + dn > 1e-9 ? (up - dn) / (up + dn) : 0;
+    f[FI.s_r15] = ret('silver', i, 15);
+    f[FI.gs_r60] = f[FI.g_r60] - ret('silver', i, 60);
+    f[FI.o_r15] = ret('brent', i, 15); f[FI.o_r60] = ret('brent', i, 60);
+    f[FI.e_r15] = ret('spx', i, 15); f[FI.e_r60] = ret('spx', i, 60);
+    f[FI.y_d15] = ydiff(i, 15); f[FI.y_d60] = ydiff(i, 60); f[FI.y_d240] = ydiff(i, 240);
+    f[FI.d_r15] = dret(i, 15); f[FI.d_r60] = dret(i, 60);
+    f[FI.b_r15] = ret('btc', i, 15); f[FI.b_r60] = ret('btc', i, 60);
+    const ix = b.ix;
+    for (const k of IXF) { const val = ix ? ix[II[k]] : NaN; f[FI['ix_' + k]] = isNum(val) ? (val - 50) / 25 : 0; }
+    const d = new Date(b.t), hr = d.getUTCHours() + d.getUTCMinutes() / 60, dow = d.getUTCDay(), wk = dow >= 1 && dow <= 5;
+    f[FI.sess_us] = wk && hr >= 13.5 && hr < 20 ? 1 : 0;
+    f[FI.sess_in] = wk && hr >= 3.5 && hr < 18 ? 1 : 0;   // MCX 09:00–23:30 IST
+    f[FI.closed] = marketClosed(b.t) ? 1 : 0;
+  }
+}
+const tgt = (i, h) => { const B = S.bars, j = i + h; return j < B.length ? (Math.log(B[j].gold) - Math.log(B[i].gold)) * 1e4 : NaN; };
+function fitNorm(i0, i1) {
+  const mean = Array(F).fill(0), std = Array(F).fill(1);
+  for (let c = 0; c < F; c++) {
+    if (!FEATS[c][1]) continue;
+    let n = 0, s = 0, s2 = 0;
+    for (let i = i0; i < i1; i++) { const x = S.bars[i].f[c]; if (isNum(x)) { n++; s += x; s2 += x * x; } }
+    if (n > 20) { const m = s / n, sd = Math.sqrt(Math.max(s2 / n - m * m, 0)); mean[c] = m; std[c] = sd > 1e-6 ? sd : 1; }
+  }
+  S.norm = {mean, std};
+}
+function fitYs(i0, i1) {
+  S.ys = H.map(h => { let n = 0, s2 = 0; for (let i = i0; i < i1 - h; i++) { const y = tgt(i, h); if (isNum(y)) { n++; s2 += y * y; } } return Math.max(n > 30 ? Math.sqrt(s2 / n) : 2 * Math.sqrt(h), 0.3 * Math.sqrt(h)); });
+}
+const zc = (x, m, s) => { const z = (x - m) / s; return z > 6 ? 6 : z < -6 ? -6 : z === z ? z : 0; };
+function rawWithScenario(c, raw, over) {
+  if (!over) return raw;
+  for (const [cc, v] of over.set || []) if (cc === c) raw = v;
+  for (const [cc, d] of over.add || []) if (cc === c) raw += d;
+  return raw;
+}
+let DL_OFF = null; // features hidden from the deep net (they mostly let it memorise the clock)
+function fillWindow(i, xs, xo, xl, lo, over) {
+  const B = S.bars, mean = S.norm.mean, std = S.norm.std;
+  if (!DL_OFF || DL_OFF.key !== CFG.dlDrop.join()) DL_OFF = {key: CFG.dlDrop.join(), idx: CFG.dlDrop.map(n => FI[n]).filter(x => x >= 0)};
+  for (let k = 0; k < T; k++) {
+    const j = Math.max(0, i - (T - 1 - k) * STEP), f = B[j].f, lastStep = k === T - 1;
+    for (let c = 0; c < F; c++) {
+      let raw = f[c];
+      if (over) { for (const [cc, v] of over.set || []) if (cc === c) raw = v; if (lastStep) for (const [cc, d] of over.add || []) if (cc === c) raw += d; }
+      xs[xo + k * F + c] = zc(raw, mean[c], std[c]);
+    }
+  }
+  const f = B[i].f;
+  for (let c = 0; c < F; c++) xl[lo + c] = zc(rawWithScenario(c, f[c], over), mean[c], std[c]);
+  for (let l = 1; l <= 4; l++) xl[lo + F + l - 1] = zc(B[Math.max(0, i - l)].f[FI.g_r1], mean[FI.g_r1], std[FI.g_r1]);
+  for (const c of DL_OFF.idx) { xl[lo + c] = 0; for (let k = 0; k < T; k++) xs[xo + k * F + c] = 0; }
+}
+function sampleData(items) {
+  const n = items.length;
+  const d = {n, xs: new Float32Array(n * T * F), xl: new Float32Array(n * FL), y: new Float32Array(n * NH), m: new Float32Array(n * NH), w: new Float32Array(n), idx: items.map(it => it.i)};
+  items.forEach((it, k) => {
+    fillWindow(it.i, d.xs, k * T * F, d.xl, k * FL, null);
+    for (let h = 0; h < NH; h++) { const v = tgt(it.i, H[h]); if (isNum(v)) { d.y[k * NH + h] = clamp(v / S.ys[h], -8, 8); d.m[k * NH + h] = CFG.hw[h]; } }
+    d.w[k] = it.w || 1;
+  });
+  return d;
+}
+
+// ---------- deep net (TensorFlow.js) ----------
+async function setupBackend() {
+  if (!window.tf) { feed('tf', false, 'TensorFlow.js did not load'); return ''; }
+  const tryB = async name => {
+    try { const ok = await Promise.race([tf.setBackend(name), sleep(15000).then(() => false)]); if (ok) { await tf.ready(); return true; } } catch (e) { /* next */ }
+    return false;
+  };
+  if (tf.wasm && typeof tf.wasm.setWasmPaths === 'function') {
+    try { tf.wasm.setWasmPaths(WASM_PATH); } catch (e) { /* ignore */ }
+    if (await tryB('wasm')) { feed('tf', true, 'Running on WebAssembly'); return 'wasm'; }
+  }
+  if (await tryB('webgl')) { feed('tf', true, 'Running on WebGL'); return 'webgl'; }
+  if (await tryB('cpu')) { feed('tf', true, 'Running on the CPU (slower)'); return 'cpu'; }
+  feed('tf', false, 'No TensorFlow.js backend available');
+  return '';
+}
+function buildNet() {
+  const seqIn = tf.input({shape: [T, F], name: 'last_hour'});
+  const nowIn = tf.input({shape: [FL], name: 'this_minute'});
+  const seqN = CFG.noise > 0 ? tf.layers.gaussianNoise({stddev: CFG.noise, name: 'noise_seq'}).apply(seqIn) : seqIn;
+  const nowN = CFG.noise > 0 ? tf.layers.gaussianNoise({stddev: CFG.noise, name: 'noise_now'}).apply(nowIn) : nowIn;
+  let x = tf.layers.lstm({units: CFG.units1, returnSequences: true, recurrentInitializer: 'glorotUniform', name: 'lstm_1'}).apply(seqN);
+  x = tf.layers.lstm({units: CFG.units2, recurrentInitializer: 'glorotUniform', name: 'lstm_2'}).apply(x);
+  let c = tf.layers.dense({units: CFG.ctx, activation: 'relu', name: 'context_1'}).apply(nowN);
+  c = tf.layers.dense({units: Math.max(8, CFG.ctx >> 1), activation: 'relu', name: 'context_2'}).apply(c);
+  let z = tf.layers.concatenate({name: 'fuse'}).apply([x, c]);
+  z = tf.layers.dense({units: CFG.ctx, activation: 'relu', name: 'head'}).apply(z);
+  z = tf.layers.dropout({rate: CFG.dropout, name: 'dropout'}).apply(z);
+  let out = tf.layers.dense({units: 2 * NH, name: 'mean_and_log_sigma', kernelInitializer: tf.initializers.randomNormal({mean: 0, stddev: 0.01})}).apply(z);
+  // linear path from the current minute straight to the outputs: learns ridge-like relations quickly, the LSTM adds what is nonlinear
+  if (CFG.skip) out = tf.layers.add({name: 'with_linear_path'}).apply([out, tf.layers.dense({units: 2 * NH, useBias: false, kernelInitializer: 'zeros', name: 'linear_path'}).apply(nowN)]);
+  return tf.model({inputs: [seqIn, nowIn], outputs: out, name: 'goldnet'});
+}
+// Gaussian negative log-likelihood + a penalty for calling the direction wrong, weighted per example.
+function lossOf(p, y, m, w) {
+  const mu = p.slice([0, 0], [-1, NH]);
+  const ls = p.slice([0, NH], [-1, NH]).clipByValue(CFG.lsMin, CFG.lsMax);
+  const z = y.sub(mu).mul(tf.exp(ls.neg()));
+  const nll = z.square().mul(0.5).add(ls);
+  const wrongWay = tf.relu(mu.mul(y).neg()).mul(CFG.dirPen);
+  const per = nll.add(wrongWay).mul(m).mul(w);
+  const data = per.sum().div(m.mul(w).sum().add(1e-6));
+  const l2 = tf.addN(S.model.trainableWeights.filter(v => /kernel/.test(v.name)).map(v => v.read().square().sum())).mul(CFG.l2);
+  return data.add(l2);
+}
+function trainOn(d, lr) {
+  S.opt.learningRate = lr;
+  const xs = tf.tensor3d(d.xs, [d.n, T, F]), xl = tf.tensor2d(d.xl, [d.n, FL]), y = tf.tensor2d(d.y, [d.n, NH]), m = tf.tensor2d(d.m, [d.n, NH]), w = tf.tensor2d(d.w, [d.n, 1]);
+  let v = NaN;
+  try {
+    const cost = S.opt.minimize(() => lossOf(S.model.apply([xs, xl], {training: true}), y, m, w), true);
+    v = cost.dataSync()[0]; cost.dispose();
+  } finally { tf.dispose([xs, xl, y, m, w]); }
+  S.cnt.steps++;
+  return v;
+}
+function predictRaw(d) {
+  const out = [];
+  for (let s = 0; s < d.n; s += 512) {
+    const n = Math.min(512, d.n - s);
+    const xs = tf.tensor3d(d.xs.subarray(s * T * F, (s + n) * T * F), [n, T, F]), xl = tf.tensor2d(d.xl.subarray(s * FL, (s + n) * FL), [n, FL]);
+    const p = S.model.predict([xs, xl]);
+    const a = p.dataSync();
+    for (let k = 0; k < a.length; k++) out.push(a[k]);
+    tf.dispose([xs, xl, p]);
+  }
+  return out;
+}
+function nllStats(d, arr) {
+  const per = new Float32Array(d.n); let tot = 0, cnt = 0;
+  for (let k = 0; k < d.n; k++) {
+    let s = 0, c = 0;
+    for (let h = 0; h < NH; h++) {
+      if (!d.m[k * NH + h]) continue;
+      const mu = arr[k * 2 * NH + h], ls = clamp(arr[k * 2 * NH + NH + h], CFG.lsMin, CFG.lsMax), z = (d.y[k * NH + h] - mu) * Math.exp(-ls);
+      s += 0.5 * z * z + ls; c++;
+    }
+    per[k] = c ? s / c : 0; tot += s; cnt += c;
+  }
+  return {mean: cnt ? tot / cnt : NaN, per};
+}
+function dlPredict(items) {
+  const n = items.length, xs = new Float32Array(n * T * F), xl = new Float32Array(n * FL);
+  items.forEach((it, k) => fillWindow(it.i, xs, k * T * F, xl, k * FL, it.over));
+  const tx = tf.tensor3d(xs, [n, T, F]), tl = tf.tensor2d(xl, [n, FL]);
+  const p = S.model.predict([tx, tl]);
+  const a = p.dataSync();
+  tf.dispose([tx, tl, p]);
+  const res = [];
+  for (let k = 0; k < n; k++) { const mu = [], ls = []; for (let h = 0; h < NH; h++) { mu.push(clamp(a[k * 2 * NH + h], -4, 4)); ls.push(clamp(a[k * 2 * NH + NH + h], CFG.lsMin, CFG.lsMax)); } res.push({mu, ls}); }
+  return res;
+}
+
+// ---------- factor model: recursive least squares, one per horizon ----------
+function rlsInit() { return H.map(() => { const P = new Float64Array(PR * PR); for (let a = 0; a < PR; a++) P[a * PR + a] = CFG.rlsPrior; return {th: new Float64Array(PR), P}; }); }
+function phiAt(i, over) {
+  const x = new Float64Array(PR), f = S.bars[i].f, mean = S.norm.mean, std = S.norm.std;
+  RLS_FEATS.forEach((c, k) => { x[k] = zc(rawWithScenario(c, f[c], over), mean[c], std[c]); });
+  x[PR - 1] = 1;
+  return x;
+}
+function rlsRaw(h, x) { const th = S.rls[h].th; let s = 0; for (let k = 0; k < PR; k++) s += th[k] * x[k]; return s; }
+const rlsPredict = (h, x) => clamp(rlsRaw(h, x), -CFG.rlsClip, CFG.rlsClip);
+function rlsUpdate(h, x, y) {
+  const R = S.rls[h], P = R.P, th = R.th, lam = CFG.rlsLambda, wt = CFG.rlsHW ? Math.min(1, 2 / H[h]) : 1;
+  const Px = new Float64Array(PR);
+  for (let a = 0; a < PR; a++) { let s = 0; for (let b = 0; b < PR; b++) s += P[a * PR + b] * x[b]; Px[a] = s; }
+  let den = lam / wt; for (let a = 0; a < PR; a++) den += x[a] * Px[a];
+  const e = clamp(y, -5, 5) - rlsRaw(h, x);
+  for (let a = 0; a < PR; a++) th[a] += Px[a] / den * e;
+  let tr = 0;
+  for (let a = 0; a < PR; a++) { for (let b = 0; b < PR; b++) P[a * PR + b] = (P[a * PR + b] - Px[a] * Px[b] / den) / lam; tr += P[a * PR + a]; }
+  if (!isNum(th[0]) || !isNum(tr) || tr > 50) { const keep = isNum(th[0]) ? th : new Float64Array(PR); S.rls[h] = rlsInit()[0]; S.rls[h].th = keep; }
+}
+
+// ---------- ensemble (Hedge) and penalties ----------
+function hedgeStep(w, preds, y, s, eta) {
+  let tot = 0;
+  for (let e = 0; e < NE; e++) { if (!isNum(preds[e])) continue; const l = Math.min(((preds[e] - y) / s) ** 2, 9); w[e] *= Math.exp(-eta * l); }
+  for (let e = 0; e < NE; e++) tot += isNum(preds[e]) ? w[e] : 0;
+  if (!(tot > 0)) return;
+  const avail = preds.filter(isNum).length;
+  for (let e = 0; e < NE; e++) if (isNum(preds[e])) w[e] = 0.98 * (w[e] / tot) + 0.02 / avail;
+  let sum = 0; for (let e = 0; e < NE; e++) sum += w[e];
+  for (let e = 0; e < NE; e++) w[e] /= sum;
+}
+function blend(h, preds) {
+  const w = S.hedge[h]; let s = 0, ws = 0;
+  for (let e = 0; e < NE; e++) if (isNum(preds[e])) { s += w[e] * preds[e]; ws += w[e]; }
+  return ws > 0 ? s / ws : 0;
+}
+function currentLR() {
+  const p = S.pen, r = p.l > 1e-6 ? p.s / p.l : 1;
+  let lr = CFG.lr0 * clamp(r, 0.5, 3);
+  if (now() < p.boostUntil) lr *= 2;
+  return clamp(lr, 1e-4, 5e-3);
+}
+function scoreRecord(r, y, tEnd) {
+  const h = r.h, s = S.ys[h];
+  const e = y - r.mu, Pmag = Math.min((e / s) ** 2, 9), Pn = Math.min((y / s) ** 2, 9);
+  const moved = Math.abs(y) > 0.25 * s;
+  const dirOk = moved && Math.abs(r.mu) > 1e-9 ? Math.sign(y) === Math.sign(r.mu) : null;
+  const inBand = Math.abs(e) <= Z80 * r.sig;
+  const P = Pmag + (dirOk === false ? 1 : 0) + (inBand ? 0 : 0.5);
+  hedgeStep(S.hedge[h], r.preds, y, s, 0.25);
+  const i0 = idxOfT(r.t0);
+  if (i0 >= 0 && S.rls) rlsUpdate(h, phiAt(i0), y / s);
+  if (i0 >= 0) S.bars[i0].p = Math.max(S.bars[i0].p || 1, 0.3 + P);
+  S.cal[h] = clamp(S.cal[h] * Math.exp(0.02 * ((inBand ? 0 : 1) - 0.2)), 0.4, 4);
+  const p = S.pen;
+  p.s += 0.05 * (Pmag - p.s); p.l += 0.005 * (Pmag - p.l); p.n++;
+  p.cumM += Pmag; p.cumN += Pn;
+  const ph = p.ph; ph.n++; ph.mean += (Pmag - ph.mean) / ph.n; ph.m += Pmag - ph.mean - 0.1; ph.M = Math.min(ph.M, ph.m);
+  if (ph.n > 90 && ph.m - ph.M > 30) {
+    p.boostUntil = now() + 30 * MIN;
+    log('Drift detected: penalties stayed high, so learning is boosted for 30 minutes.', 'warn');
+    p.ph = {n: 0, mean: 0, m: 0, M: 0};
+  }
+  const M = S.metrics[h];
+  const p0 = priceOf(r.g0), fcRs = p0 * Math.exp(r.mu / 1e4), actRs = p0 * Math.exp(y / 1e4);
+  M.n++; M.se += e * e; M.seN += y * y; M.ae += Math.abs(actRs - fcRs); M.pen += P; M.penN += Pn;
+  if (dirOk !== null) { M.dn++; if (dirOk) M.dh++; }
+  if (inBand) M.band++;
+  M.rec.push([e * e, y * y, dirOk === null ? -1 : dirOk ? 1 : 0, inBand ? 1 : 0]);
+  if (M.rec.length > 300) M.rec.shift();
+  S.cnt.checks++; S.cnt.points += P;
+  if (dirOk === false || !inBand) S.cnt.misses++;
+  const entry = {t0: r.t0, h, g0: r.g0, mu: r.mu, y, sig: r.sig, P, dirOk, inBand};
+  S.ledger.unshift(entry);
+  if (S.ledger.length > 600) S.ledger.length = 600;
+  return entry;
+}
+function matureAll() {
+  const B = S.bars, out = [];
+  if (!B.length) return out;
+  const tLast = B[B.length - 1].t, keep = [];
+  for (const r of S.pending) {
+    const tEnd = r.t0 + H[r.h] * MIN;
+    if (tEnd > tLast) { keep.push(r); continue; }
+    const j = idxOfT(tEnd);
+    if (j < 0) continue;
+    out.push(scoreRecord(r, (Math.log(B[j].gold) - Math.log(r.g0)) * 1e4, tEnd));
+  }
+  S.pending = keep;
+  if (out.length) { S.penSeries.push([tLast, S.pen.cumM, S.pen.cumN]); if (S.penSeries.length > 4000) S.penSeries.splice(0, S.penSeries.length - 4000); }
+  return out;
+}
+function liveStats(h) {
+  const R = S.metrics[h].rec;
+  let se = 0, seN = 0, dn = 0, dh = 0, band = 0;
+  for (const r of R) { se += r[0]; seN += r[1]; if (r[2] >= 0) { dn++; dh += r[2]; } band += r[3]; }
+  return {n: R.length, skill: R.length >= 10 && seN > 0 ? 1 - se / seN : NaN, hit: dn >= 5 ? dh / dn : NaN, dn, cover: R.length ? band / R.length : NaN};
+}
+
+// ---------- training ----------
+function setPriority(i, v, replace) { const b = S.bars[i]; if (!b) return; b.p = replace ? 0.2 + v : Math.max(b.p || 1, 0.2 + v); }
+function sampleReplay(K, exclude) {
+  const B = S.bars, N = B.length, lo = WARM, hi = N - 2;
+  if (hi - lo < 50) return [];
+  const cum = new Float64Array(hi - lo + 1); let s = 0;
+  for (let i = lo; i <= hi; i++) { s += Math.pow(clamp(B[i].p || 1, 0.05, 10), 0.6); cum[i - lo] = s; }
+  const out = [];
+  for (let k = 0; k < K; k++) {
+    const r = Math.random() * s; let a = 0, b = cum.length - 1;
+    while (a < b) { const m = (a + b) >> 1; if (cum[m] < r) a = m + 1; else b = m; }
+    const i = lo + a;
+    if (!exclude.has(i)) { out.push({i, w: 1}); exclude.add(i); }
+  }
+  return out;
+}
+async function onlineLearn(added, matured) {
+  if (!S.modelReady || !S.model || S.training) return;
+  const B = S.bars, N = B.length;
+  let moving = false;
+  for (let i = Math.max(1, N - 30); i < N; i++) if (B[i].gold !== B[i - 1].gold) { moving = true; break; }
+  if (!moving) { if (!S.frozen) log('Gold price is not moving (market closed?). Learning pauses until it moves.'); S.frozen = true; return; }
+  if (S.frozen) { log('Gold is moving again. Learning resumed.'); S.frozen = false; }
+  const penBy = new Map();
+  for (const m of matured) { const i0 = idxOfT(m.t0); if (i0 >= 0) penBy.set(i0, Math.max(penBy.get(i0) || 0, m.P)); }
+  const fresh = new Set();
+  for (const j of added) for (const h of H) { const i0 = j - h; if (i0 >= WARM) fresh.add(i0); }
+  const items = [];
+  for (const i0 of fresh) { const p = penBy.get(i0) || 0; items.push({i: i0, w: 1 + 0.5 * Math.min(p, 6)}); }
+  for (const it of sampleReplay(CFG.replay, new Set(fresh))) items.push(it);
+  if (items.length < 4) return;
+  const lr = currentLR();
+  const d = sampleData(items);
+  let loss = NaN;
+  for (let s = 0; s < CFG.onlineSteps; s++) loss = trainOn(d, lr);
+  S.lastLR = lr; S.lastLoss = loss;
+  const per = nllStats(d, predictRaw(d)).per;
+  items.forEach((it, k) => setPriority(it.i, per[k], true));
+}
+async function trainFromScratch() {
+  if (!S.backend || S.training) return false;
+  const N = S.bars.length, first = WARM, last = N - 2;
+  if (last - first < 600) { log('Not enough history yet to train the deep net. Trying again later.', 'warn'); return false; }
+  S.training = true; S.modelReady = false;
+  try {
+    const idx = []; for (let i = first; i <= last; i++) idx.push(i);
+    const nVal = Math.max(200, Math.floor(idx.length * 0.15));
+    const val = idx.slice(idx.length - nVal), train = idx.slice(0, Math.max(0, idx.length - nVal - 60));
+    const trEnd = train[train.length - 1] + 1;
+    fitNorm(first, trEnd); fitYs(first, trEnd);
+    if (S.model) S.model.dispose();
+    S.model = buildNet(); S.opt = tf.train.adam(CFG.lr0);
+    const vd = sampleData(val.map(i => ({i})));
+    let best = Infinity, bestW = null, bad = 0, ep = 0;
+    const BS = CFG.batch, t0 = performance.now(), steps = Math.ceil(train.length / BS), order = train.slice();
+    bootUI('Training the deep net on ' + nf0.format(train.length) + ' minutes of history', 0.2, 'Held-out check uses the last ' + nf0.format(val.length) + ' minutes.');
+    for (ep = 0; ep < CFG.maxEpochs; ep++) {
+      shuffle(order);
+      for (let s = 0; s < steps; s++) {
+        trainOn(sampleData(order.slice(s * BS, (s + 1) * BS).map(i => ({i}))), CFG.lr0);
+        if (s % 5 === 0) { bootUI(null, 0.2 + 0.75 * Math.min(1, (performance.now() - t0) / CFG.trainBudget), 'Epoch ' + (ep + 1) + ', batch ' + (s + 1) + ' of ' + steps + ' on ' + S.backend); await yieldUI(); }
+        if (performance.now() - t0 > CFG.trainBudget) break;
+      }
+      const va = predictRaw(vd), vl = nllStats(vd, va).mean;
+      if (TEST) { const sk = H.map((_, h) => { let a = 0, b = 0; for (let k = 0; k < vd.n; k++) if (vd.m[k * NH + h]) { const y = vd.y[k * NH + h]; a += (y - va[k * 2 * NH + h]) ** 2; b += y * y; } return +(1 - a / b).toFixed(4); }); (S.curve = S.curve || []).push({ep, vl: +vl.toFixed(4), sk}); }
+      if (vl < best - 1e-4) { best = vl; if (bestW) tf.dispose(bestW); bestW = S.model.getWeights().map(t => t.clone()); bad = 0; }
+      else if (++bad >= CFG.patience) { ep++; break; }
+      if (performance.now() - t0 > CFG.trainBudget) { ep++; break; }
+    }
+    if (bestW) { S.model.setWeights(bestW); tf.dispose(bestW); }
+    const secs = (performance.now() - t0) / 1000;
+    backtest(train, val, vd);
+    S.boot.epochs = ep; S.boot.secs = secs; S.boot.valNLL = best;
+    S.modelReady = true;
+    const k = S.boot.skillDL[2];
+    log('Deep net trained: ' + ep + ' epochs in ' + secs.toFixed(0) + ' s on ' + S.backend + '. Held-out skill at 15 min: ' + (isNum(k) ? (k * 100).toFixed(1) + '%' : 'n/a') + '.');
+    return true;
+  } catch (e) {
+    log('Training failed: ' + e.message, 'warn');
+    feed('tf', false, 'Training failed: ' + e.message);
+    return false;
+  } finally { S.training = false; }
+}
+// Score the held-out minutes, warm up the ensemble weights and calibrate the 80% range.
+function backtest(train, val, vd) {
+  const arr = predictRaw(vd);
+  S.rls = rlsInit();
+  for (const i of train) { const x = phiAt(i); for (let h = 0; h < NH; h++) { const y = tgt(i, H[h]); if (isNum(y)) rlsUpdate(h, x, y / S.ys[h]); } }
+  const acc = H.map(() => ({dl: 0, rls: 0, y2: 0, n: 0}));
+  const hw = H.map(() => Array(NE).fill(1 / NE));
+  const ratios = H.map(() => []);
+  val.forEach((i, k) => {
+    const x = phiAt(i), lg = Math.log(S.bars[i].gold);
+    for (let h = 0; h < NH; h++) {
+      const y = tgt(i, H[h]); if (!isNum(y)) continue;
+      const s = S.ys[h];
+      const mu = arr[k * 2 * NH + h] * s, sig = Math.exp(clamp(arr[k * 2 * NH + NH + h], CFG.lsMin, CFG.lsMax)) * s;
+      const pr = rlsPredict(h, x) * s;
+      const back = (lg - Math.log(S.bars[Math.max(0, i - H[h])].gold)) * 1e4;
+      acc[h].dl += (mu - y) ** 2; acc[h].rls += (pr - y) ** 2; acc[h].y2 += y * y; acc[h].n++;
+      hedgeStep(hw[h], [mu, pr, 0.2 * back, -0.2 * back, 0], y, s, 0.03);
+      ratios[h].push(Math.abs(y - mu) / sig);
+    }
+  });
+  for (const i of val) { const x = phiAt(i); for (let h = 0; h < NH; h++) { const y = tgt(i, H[h]); if (isNum(y)) rlsUpdate(h, x, y / S.ys[h]); } }
+  S.hedge = hw;
+  S.cal = ratios.map(r => (r.length > 30 ? clamp(quantile(r, 0.8) / Z80, 0.5, 3) : 1));
+  S.boot = {at: now(), backend: S.backend, nTrain: train.length, nVal: val.length,
+    skillDL: acc.map(a => (a.n && a.y2 > 0 ? 1 - a.dl / a.y2 : NaN)), skillRLS: acc.map(a => (a.n && a.y2 > 0 ? 1 - a.rls / a.y2 : NaN))};
+}
+
+// ---------- forecasting ----------
+function driverScenario(k, v) {
+  const d = IDX[k], cur = currentIx()[k];
+  if (d.feat) return {set: [[FI[d.feat], (v - 50) / 25]], add: []};
+  if (d.shock) { const delta = (v - (isNum(cur) ? cur : 50)) * d.shock.per; return {set: [], add: Object.entries(d.shock.feats).map(([n, m]) => [FI[n], delta * m])}; }
+  if (d.fx) return {set: [], add: [], fx: (v - (isNum(cur) ? cur : 50)) * d.fx};
+  return null;
+}
+function mergeScen(list) {
+  const o = {set: [], add: [], fx: 0};
+  for (const s of list) { if (!s) continue; o.set.push(...(s.set || [])); o.add.push(...(s.add || [])); o.fx += s.fx || 0; }
+  return o;
+}
+function currentIx() { const b = lastBar(); return b && b.ix ? b.ix : new Float32Array(NI).fill(NaN); }
+// Forecasts (bps) for the newest bar under an optional scenario, plus per-expert predictions.
+function expertPreds(i, dl, over) {
+  const B = S.bars, lg = Math.log(B[i].gold), x = phiAt(i, over);
+  return H.map((hh, h) => {
+    const s = S.ys[h], back = (lg - Math.log(B[Math.max(0, i - hh)].gold)) * 1e4;
+    return [dl ? dl.mu[h] * s : NaN, S.rls ? rlsPredict(h, x) * s : NaN, 0.2 * back, -0.2 * back, 0];
+  });
+}
+function makeForecast() {
+  const B = S.bars, i = B.length - 1;
+  if (i < WARM || !S.norm || !S.ys) return;
+  const items = [{i, over: null}];
+  const sensKeys = [];
+  IDX.forEach((d, k) => { if (d.feat || d.shock) { const cur = currentIx()[k]; items.push({i, over: driverScenario(k, (isNum(cur) ? cur : 50) + 10)}); sensKeys.push(k); } });
+  let dl = null;
+  if (S.modelReady && S.model) { try { dl = dlPredict(items); } catch (e) { log('Prediction failed: ' + e.message, 'warn'); } }
+  const base = expertPreds(i, dl && dl[0], null);
+  const fc = {t: B[i].t, g: B[i].gold, h: []};
+  for (let h = 0; h < NH; h++) {
+    const s = S.ys[h], mu = blend(h, base[h]);
+    const sigDL = dl ? Math.exp(dl[0].ls[h]) * s : s;
+    const sig = Math.max(sigDL * S.cal[h], 0.05 * s);
+    fc.h.push({mu, sig, preds: base[h]});
+  }
+  const prevT = S.pending.length ? S.pending[S.pending.length - 1].t0 : 0;
+  if (fc.t > prevT) for (let h = 0; h < NH; h++) S.pending.push({t0: fc.t, h, mu: fc.h[h].mu, sig: fc.h[h].sig, preds: fc.h[h].preds, g0: fc.g});
+  S.fc = fc;
+  // learned sensitivity: change in the blended 1-hour forecast for +10 index points (ensemble of the two learning experts)
+  const sens = {};
+  sensKeys.forEach((k, n) => {
+    const pr = expertPreds(i, dl && dl[n + 1], items[n + 1].over)[3];
+    const w = S.hedge[3];
+    const dDl = isNum(pr[0]) && isNum(base[3][0]) ? pr[0] - base[3][0] : 0, dR = isNum(pr[1]) && isNum(base[3][1]) ? pr[1] - base[3][1] : 0;
+    let ws = 0; for (let e = 0; e < NE; e++) if (isNum(base[3][e])) ws += w[e];
+    sens[k] = ws > 0 ? (w[0] * dDl + w[1] * dR) / ws : 0;
+  });
+  S.sens = sens;
+}
+function scenarioForecast() {
+  const keys = Object.keys(S.scen);
+  if (!keys.length || !S.fc) return null;
+  const over = mergeScen(keys.map(k => driverScenario(II[k], S.scen[k])));
+  const i = S.bars.length - 1;
+  let dl = null;
+  if (S.modelReady && S.model) { try { dl = dlPredict([{i, over}])[0]; } catch (e) { dl = null; } }
+  const pr = expertPreds(i, dl, over);
+  return {mu: H.map((_, h) => blend(h, pr[h]) + over.fx * 1e4), fx: over.fx};
+}
+
+// ---------- prices ----------
+function priceOf(g, purity) {
+  const s = S.set;
+  let p = g * S.basis * usdinr() / OZ_G * 10 * (1 + (+s.duty || 0) / 100) * (1 + (+s.prem || 0) / 100) * (purity || 1);
+  if (s.incGst) p *= 1 + (+s.gst || 0) / 100;
+  return p;
+}
+
+// ---------- persistence ----------
+const BAR_KEYS = ['t', 'gold', 'gh', 'gl', 'gv', 'silver', 'brent', 'spx', 'us10y', 'eur', 'jpy', 'btc', 'p'];
+async function saveState() {
+  if (TEST && window.__noSave) return;
+  const st = {
+    schema: SCHEMA, savedAt: now(),
+    bars: S.bars.map(b => BAR_KEYS.map(k => b[k])),
+    pending: S.pending, ledger: S.ledger.slice(0, 600), penSeries: S.penSeries.slice(-4000), log: S.log.slice(0, 150),
+    metrics: S.metrics, hedge: S.hedge, rls: S.rls && S.rls.map(r => ({th: Array.from(r.th), P: Array.from(r.P)})),
+    norm: S.norm, ys: S.ys, cal: S.cal, pen: S.pen, basis: S.basis, basisInit: S.basisInit,
+    usdinr: S.usdinr, fxSrc: S.fxSrc, fxAt: S.fxAt, fxHist: S.fxHist, fxHistAt: S.fxHistAt, dxy: S.dxy,
+    tsy: S.tsy, tsyAt: S.tsyAt, gd: S.gd, quakes: S.quakes, quakesAt: S.quakesAt,
+    cnt: S.cnt, boot: S.boot, goldSrc: S.goldSrc, goldScale: S.goldScale, modelReady: S.modelReady,
+  };
+  await IDB.set('state', st);
+  if (S.model && S.modelReady) { try { await S.model.save(MODEL_URL); } catch (e) { /* storage may be full or blocked */ } }
+  S.lastSave = now();
+}
+async function saveSettings() { await IDB.set('settings', S.set); }
+async function loadState() {
+  const set = await IDB.get('settings');
+  if (set) Object.assign(S.set, set);
+  const st = await IDB.get('state');
+  if (!st || st.schema !== SCHEMA) return false;
+  S.bars = (st.bars || []).map(a => { const b = {}; BAR_KEYS.forEach((k, i) => { b[k] = a[i]; }); return b; });
+  for (const k of ['pending', 'ledger', 'penSeries', 'log', 'metrics', 'hedge', 'norm', 'ys', 'cal', 'pen', 'basis', 'basisInit', 'usdinr', 'fxSrc', 'fxAt', 'fxHist', 'fxHistAt', 'dxy', 'tsy', 'tsyAt', 'gd', 'quakes', 'quakesAt', 'cnt', 'boot', 'goldSrc', 'goldScale']) if (st[k] !== undefined && st[k] !== null) S[k] = st[k];
+  if (st.rls) S.rls = st.rls.map(r => ({th: Float64Array.from(r.th), P: Float64Array.from(r.P)}));
+  S.wasReady = !!st.modelReady;
+  S.ixDirty = true;
+  return true;
+}
+
+// ---------- model file ----------
+function f32ToB64(arr) { const u8 = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+function b64ToF32(b64) { const s = atob(b64), u8 = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u8[i] = s.charCodeAt(i); return new Float32Array(u8.buffer); }
+function exportModel() {
+  if (!S.model || !S.modelReady) { alertMsg('There is no trained model to export yet.'); return; }
+  const obj = {format: 'kasauti-model', schema: SCHEMA, features: FEATS.map(f => f[0]), exportedAt: new Date(now()).toISOString(),
+    norm: S.norm, ys: S.ys, cal: S.cal, hedge: S.hedge, rls: S.rls.map(r => ({th: Array.from(r.th), P: Array.from(r.P)})), boot: S.boot, steps: S.cnt.steps,
+    weights: S.model.getWeights().map(t => ({shape: t.shape, b64: f32ToB64(t.dataSync())}))};
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], {type: 'application/json'}));
+  a.download = 'kasauti-state.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  log('Model exported (' + nf0.format(S.cnt.steps) + ' gradient updates so far).');
+}
+function importModelObj(obj) {
+  if (!obj || obj.format !== 'kasauti-model' || obj.schema !== SCHEMA) throw new Error('this file comes from a different version of the model');
+  if (!window.tf || !S.backend) throw new Error('TensorFlow.js is not available');
+  const m = buildNet(), cur = m.getWeights();
+  if (cur.length !== obj.weights.length) { m.dispose(); throw new Error('the weight layout does not match'); }
+  const ts = obj.weights.map((w, k) => { const a = b64ToF32(w.b64); if (a.length !== cur[k].size) throw new Error('weight sizes do not match'); return tf.tensor(a, w.shape); });
+  m.setWeights(ts); tf.dispose(ts);
+  if (S.model) S.model.dispose();
+  S.model = m; S.opt = tf.train.adam(CFG.lr0);
+  S.norm = obj.norm; S.ys = obj.ys; S.cal = obj.cal || [1, 1, 1, 1]; S.hedge = obj.hedge || H.map(() => Array(NE).fill(1 / NE));
+  S.rls = obj.rls ? obj.rls.map(r => ({th: Float64Array.from(r.th), P: Float64Array.from(r.P)})) : rlsInit();
+  S.boot = obj.boot || S.boot;
+  S.modelReady = true;
+}
+
+// ---------- the minute loop ----------
+async function ensureBars() {
+  const lc = lastCompleteMinute(), B = S.bars;
+  if (B.length && lc - B[B.length - 1].t <= 4800 * MIN) return true;
+  if (B.length) log('The page was closed for more than three days, so the history was reloaded.');
+  S.bars = [];
+  bootUI('Downloading 3½ days of minute data for eight markets', 0.06);
+  const res = await fetchSeries(lc - 4990 * MIN, now(), true);
+  if (!res.gold.length) return false;
+  extendBars(res, lc);
+  S.ixDirty = true;
+  log('Loaded ' + nf0.format(S.bars.length) + ' minutes of history (gold from ' + S.goldSrc + ').');
+  return S.bars.length > WARM + 700;
+}
+async function tick() {
+  if (S.busy) return;
+  S.busy = true;
+  setNext(null);
+  try {
+    const lc = lastCompleteMinute();
+    let added = [];
+    const lb = lastBar();
+    if (!lb || lc - lb.t > 4800 * MIN) {
+      const ok = await ensureBars();
+      if (!ok && !S.bars.length) throw new Error('Gold market feed unreachable');
+      added = S.bars.map((_, i) => i).slice(-1);
+    } else if (lc > lb.t) {
+      const res = await fetchSeries(lb.t - 2 * MIN, now(), false);
+      added = extendBars(res, lc);
+    }
+    await Promise.allSettled([refreshSpot(), refreshFx(false), refreshTreasury(), refreshQuakes()]);
+    const cut = trimBars();
+    if (cut) added = added.map(i => i - cut).filter(i => i >= 0);
+    computeIndices();
+    computeFeatures();
+    if (!S.norm && S.bars.length > WARM + 50) { fitNorm(WARM, S.bars.length); fitYs(WARM, S.bars.length); }
+    if (!S.rls && S.norm) S.rls = rlsInit();
+    if (S.backend && !S.modelReady && !S.training && S.bars.length > WARM + 700 && now() - (S.lastTrainTry || 0) > 10 * MIN) {
+      S.lastTrainTry = now(); S.booting = true;
+      await trainFromScratch();
+      S.booting = false; hideBoot();
+    }
+    const matured = S.norm ? matureAll() : [];
+    if (added.length && S.modelReady) await onlineLearn(added, matured);
+    makeForecast();
+    S.lastTick = now();
+    if (now() - S.lastSave > 5 * MIN) saveState();
+  } catch (e) {
+    log('Update failed: ' + e.message, 'warn');
+  } finally {
+    S.busy = false;
+    renderAll();
+    schedule();
+  }
+}
+let tickTimer = null;
+function schedule() {
+  if (TEST && window.__noSchedule) return;
+  clearTimeout(tickTimer);
+  const t = now(), next = Math.floor(t / MIN) * MIN + MIN + 6000;
+  S.nextTickAt = next;
+  tickTimer = setTimeout(tick, Math.max(1000, next - t));
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && S.lastTick && now() - S.lastTick > 75000 && !S.busy) tick();
+  if (document.visibilityState === 'hidden' && S.bars.length) saveState();
+});
+
+// ---------- rendering ----------
+const SEGS = {'0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc', '5': 'afgcd', '6': 'afgedc', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg', '-': 'g'};
+function segPoly(seg, x0, W, Hh, th) {
+  const t2 = th / 2, g = th * 0.22, L = x0 + t2, R = x0 + W - t2, TOP = t2, MID = Hh / 2, BOT = Hh - t2;
+  const hs = (x1, x2, y) => [[x1 + g, y], [x1 + g + t2, y - t2], [x2 - g - t2, y - t2], [x2 - g, y], [x2 - g - t2, y + t2], [x1 + g + t2, y + t2]];
+  const vs = (x, y1, y2) => [[x, y1 + g], [x + t2, y1 + g + t2], [x + t2, y2 - g - t2], [x, y2 - g], [x - t2, y2 - g - t2], [x - t2, y1 + g + t2]];
+  const P = {a: hs(L, R, TOP), g: hs(L, R, MID), d: hs(L, R, BOT), f: vs(L, TOP, MID), b: vs(R, TOP, MID), e: vs(L, MID, BOT), c: vs(R, MID, BOT)}[seg];
+  return P.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+}
+function led(text, Hh, amber) {
+  const W = Hh * 0.54, th = Hh * 0.12, adv = W + th * 0.8;
+  let x = th * 0.7; const parts = [];
+  for (const ch of text) {
+    if (ch === ',' || ch === '.') {
+      const a = x - th * 0.15, b = a + th * 0.9, top = Hh - th * 1.05, bot = Hh - th * 0.15;
+      parts.push('<rect class="on" x="' + a.toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + (b - a).toFixed(1) + '" height="' + (bot - top).toFixed(1) + '" rx="' + (th * 0.15).toFixed(1) + '"/>');
+      if (ch === ',') parts.push('<polygon class="on" points="' + [[b, bot - th * 0.1], [b - th * 0.25, Hh + th * 0.55], [a - th * 0.05, Hh + th * 0.55], [a + th * 0.3, bot - th * 0.1]].map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ') + '"/>');
+      x += th * 1.25; continue;
+    }
+    const on = SEGS[ch];
+    if (on === undefined) { x += W * 0.45; continue; }
+    for (const s of 'abcdefg') parts.push('<polygon class="' + (on.indexOf(s) >= 0 ? 'on' : 'off') + '" points="' + segPoly(s, x, W, Hh, th) + '"/>');
+    x += adv;
+  }
+  const width = x + Hh * 0.1, ht = Math.ceil(Hh + th * 0.7);
+  return '<svg class="led' + (amber ? ' amber' : '') + '" viewBox="0 0 ' + width.toFixed(1) + ' ' + ht + '" width="' + width.toFixed(1) + '" height="' + ht + '" aria-hidden="true" focusable="false"><g transform="translate(' + (Hh * 0.12).toFixed(1) + ' 0) skewX(-7)">' + parts.join('') + '</g></svg>';
+}
+function setLed(id, v, Hh, amber) {
+  const el = $('#' + id); if (!el) return;
+  const txt = isNum(v) ? nf0.format(Math.round(v)) : '-,--,---';
+  if (el.dataset.v === txt + Hh) return;
+  el.dataset.v = txt + Hh;
+  el.innerHTML = led(txt, Hh, amber);
+  el.setAttribute('aria-label', isNum(v) ? '₹' + txt : 'not available yet');
+}
+function bootUI(phase, frac, note) {
+  const el = $('#boot'); if (!el) return;
+  el.hidden = false;
+  if (phase) $('#bootPhase').textContent = phase;
+  if (isNum(frac)) $('#bootBar').style.width = (100 * clamp(frac, 0, 1)).toFixed(1) + '%';
+  if (note) $('#bootNote').textContent = note;
+}
+function hideBoot() { const el = $('#boot'); if (el) el.hidden = true; }
+function alertMsg(text) { const b = $('#banner'); b.hidden = false; b.className = 'banner'; b.textContent = text; }
+
+function renderStatus() {
+  const okHL = FEEDS.hl.ok, bad = Object.keys(FEEDS).filter(k => k !== 'tf' && FEEDS[k].ok === false);
+  $('#dotFeed').className = 'dot ' + (okHL ? (bad.length ? 'warn' : 'ok') : FEEDS.hl.ok === false ? 'bad' : '');
+  $('#stFeed').textContent = okHL ? (bad.length ? 'Live data, ' + bad.length + ' feed' + (bad.length > 1 ? 's' : '') + ' down' : 'Live data') : FEEDS.hl.ok === false ? 'Gold feed unreachable' : 'Connecting to markets';
+  const dm = $('#dotModel'), sm = $('#stModel');
+  if (S.training) { dm.className = 'dot warn'; sm.textContent = 'Training the deep net'; }
+  else if (S.modelReady) { dm.className = 'dot ok'; sm.textContent = 'Learning every minute: ' + nf0.format(S.cnt.steps) + ' updates'; }
+  else if (FEEDS.tf.ok === false) { dm.className = 'dot bad'; sm.textContent = 'Deep net unavailable, 4 experts running'; }
+  else { dm.className = 'dot'; sm.textContent = 'Model starting'; }
+  const banner = $('#banner');
+  if (!banner.dataset.sticky) {
+    if (FEEDS.hl.ok === false && !S.bars.length) { banner.hidden = false; banner.className = 'banner bad'; banner.textContent = 'The gold market feed (Hyperliquid) could not be reached: ' + (FEEDS.hl.msg || 'unknown error') + '. The page retries every minute. An ad blocker or a firewall can cause this.'; }
+    else if (marketClosed(now())) { banner.hidden = false; banner.className = 'banner'; banner.textContent = 'Spot gold is closed for the weekend (it reopens Sunday 22:00 UTC, Monday 03:30 IST). The board follows 24/7 gold perpetual futures, which can differ from Monday\'s opening rate.'; }
+    else banner.hidden = true;
+  }
+}
+function setNext(t) { S.nextTickAt = t; }
+setInterval(() => {
+  const el = $('#stNext'); if (!el) return;
+  if (S.busy) el.textContent = 'Updating';
+  else if (S.nextTickAt) { const s = Math.max(0, Math.round((S.nextTickAt - now()) / 1000)); el.textContent = 'Next update in ' + s + ' s'; }
+}, 1000);
+
+function renderBoard() {
+  const b = lastBar();
+  if (!b) return;
+  const p24 = priceOf(b.gold);
+  setLed('led24', p24, 46); setLed('led22', p24 * 0.916, 32); setLed('led18', p24 * 0.75, 32);
+  if (S.fc) {
+    const x = S.fc.h[3], pn = priceOf(S.fc.g) * Math.exp(x.mu / 1e4), d = pn - p24;
+    setLed('ledNext', pn, 32, true);
+    $('#nextLabel').textContent = (d > 0.5 ? '▲ ' : d < -0.5 ? '▼ ' : '') + 'Next hour';
+    $('#nextDelta').textContent = signedRs(d) + ' expected, 24K';
+  }
+  const fresh = S.spotAt && now() - S.spotAt < 10 * MIN;
+  $('#mSpot').textContent = usd(isNum(S.spot) ? S.spot : b.gold * S.basis) + ' per oz' + (isNum(S.spot) && !fresh ? ' (closed)' : '');
+  $('#mFx').textContent = '₹' + usdinr().toFixed(2) + ' per $' + (S.set.fxOverride ? ' (manual)' : S.usdinr ? '' : ' (fallback)');
+  $('#mDuty').textContent = (+S.set.duty).toFixed(S.set.duty % 1 ? 2 : 0) + '%' + (+S.set.prem ? ', local ' + signed(+S.set.prem, 2) + '%' : '');
+  $('#mUpd').textContent = istTime(b.t + MIN) + ' IST';
+  $('#gstLabel').textContent = 'Include ' + (+S.set.gst) + '% GST';
+  $('#gstToggle').checked = !!S.set.incGst;
+}
+function renderForecastTable() {
+  const tb = $('#ftable tbody');
+  const b = lastBar();
+  if (!S.fc || !b) { tb.innerHTML = '<tr><td colspan="7" class="muted">Waiting for the first forecast.</td></tr>'; return; }
+  const p0 = priceOf(S.fc.g);
+  tb.innerHTML = S.fc.h.map((x, h) => {
+    const pf = p0 * Math.exp(x.mu / 1e4), lo = p0 * Math.exp((x.mu - Z80 * x.sig) / 1e4), hi = p0 * Math.exp((x.mu + Z80 * x.sig) / 1e4);
+    const pu = phi(x.mu / x.sig), st = liveStats(h), d = pf - p0;
+    const skill = isNum(st.skill) ? '<span class="' + (st.skill >= 0 ? 'up' : 'down') + '">' + signed(st.skill * 100, 1) + '%</span> <span class="muted">(' + st.n + ')</span>' : '<span class="muted">checking, ' + st.n + ' of 10</span>';
+    const hit = isNum(st.hit) ? (st.hit * 100).toFixed(0) + '% <span class="muted">of ' + st.dn + '</span>' : '<span class="muted">—</span>';
+    return '<tr><td>In ' + HNAME[h] + '</td><td class="big">' + rupees(pf) + '</td><td class="' + (d > 0.5 ? 'up' : d < -0.5 ? 'down' : '') + '">' + signedRs(d) + ' <span class="muted">(' + bpsTxt(x.mu) + ')</span></td><td>' + rupees(lo) + ' – ' + rupees(hi) + '</td><td>' + (pu * 100).toFixed(0) + '%</td><td>' + skill + '</td><td>' + hit + '</td></tr>';
+  }).join('');
+  const note = $('#scenarioNote'), sc = scenarioForecast();
+  if (sc) {
+    const names = Object.keys(S.scen).map(k => IDX[II[k]].name.toLowerCase() + ' at ' + Math.round(S.scen[k])).join(', ');
+    const p1 = p0 * Math.exp(sc.mu[3] / 1e4), base = p0 * Math.exp(S.fc.h[3].mu / 1e4);
+    note.hidden = false;
+    note.innerHTML = 'Scenario with ' + esc(names) + ': the 1-hour forecast would be <b>' + rupees(p1) + '</b>, ' + signedRs(p1 - base) + ' against the live forecast. <button type="button" class="btn" id="scenReset">Reset scenario</button>';
+    $('#scenReset').onclick = () => { S.scen = {}; renderDrivers(true); renderForecastTable(); };
+  } else note.hidden = true;
+}
+function sparkSVG(vals) {
+  const W = 120, Hh = 30, n = vals.length;
+  let d = '', pen = false;
+  vals.forEach((v, k) => { if (!isNum(v)) { pen = false; return; } const x = 2 + (k / Math.max(1, n - 1)) * (W - 4), y = Hh - 3 - (v / 100) * (Hh - 6); d += (pen ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); pen = true; });
+  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + Hh + '" preserveAspectRatio="none" aria-hidden="true"><line x1="2" x2="' + (W - 2) + '" y1="' + Hh / 2 + '" y2="' + Hh / 2 + '"/>' + (d ? '<path d="' + d + '"/>' : '') + '</svg>';
+}
+function change24(key, yieldBp) {
+  const B = S.bars, N = B.length; if (N < 2) return NaN;
+  const a = B[N - 1][key], b = B[Math.max(0, N - 1441)][key];
+  if (!isNum(a) || !isNum(b)) return NaN;
+  return yieldBp ? (a - b) * 100 : 100 * Math.log(a / b);
+}
+function gdLatest(k) { const g = S.gd[k]; if (!g || !g.pts || !g.pts.length) return null; const j = g.pts.length - 1; return {v: g.pts[j][1], z: g.z ? g.z[j] : null, t: g.pts[j][0]}; }
+function newsReading(k, what) {
+  const g = S.gd[k], L = gdLatest(k);
+  if (!L) {
+    if (g && g.err) return g.err === 'unexpected reply' || g.err === 'empty timeline' ? 'GDELT did not accept this search' + (g.useAlt ? '; trying a simpler one.' : '.') : 'News feed ' + esc(g.err) + '. Retrying.';
+    return 'Waiting for GDELT (themes load one by one).';
+  }
+  const z = isNum(L.z) ? ', ' + signed(L.z, 1) + 'σ against the past week' : '';
+  if (what === 'tone') return 'Average tone ' + signed(L.v, 2) + z;
+  if (what === 'ratio') return Math.round(L.v * 100) + '% of rate stories are about cuts' + z;
+  return L.v.toFixed(2) + '% of world coverage' + z;
+}
+function readingFor(k) {
+  const b = lastBar(); if (!b) return '—';
+  const s = S.set;
+  switch (k) {
+    case 'yield': {
+      const d = change24('us10y', true);
+      let t = isNum(b.us10y) ? 'US 10-year ' + b.us10y.toFixed(2) + '% (' + signed(d, 1) + ' bp in 24 h)' : 'US 10-year yield market unavailable';
+      if (S.tsy && isNum(S.tsy.r10)) t += ', real ' + S.tsy.r10.toFixed(2) + '%';
+      return t + '. India 10-year ' + (+s.in10y).toFixed(2) + '% (manual).';
+    }
+    case 'usd': { const d = change24('eur') ; const dj = change24('jpy'); const proxy = isNum(d) && isNum(dj) ? (-0.576 * d + 0.136 * dj) / 0.712 : NaN; return (isNum(S.dxy) ? 'Dollar index about ' + S.dxy.toFixed(2) + '. ' : '') + 'Against euro and yen ' + signed(proxy, 2) + '% in 24 h.'; }
+    case 'inr': { const a = fxAt(now()), c = fxAt(now() - 30 * DAY); return '₹' + usdinr().toFixed(2) + ' per $' + (isNum(a) && isNum(c) ? ', ' + signed(100 * Math.log(a / c), 2) + '% in 30 days' : '') + '.'; }
+    case 'oil': return isNum(b.brent) ? 'Brent $' + b.brent.toFixed(2) + ' (' + signed(change24('brent'), 2) + '% in 24 h).' : 'Brent market unavailable.';
+    case 'risk': return (isNum(b.spx) ? 'S&P 500 ' + nf0.format(b.spx) + ' (' + signed(change24('spx'), 2) + '%)' : 'S&P 500 unavailable') + (isNum(b.btc) ? ', bitcoin ' + signed(change24('btc'), 2) + '% in 24 h.' : '.');
+    case 'geo': case 'epu': case 'mfg': case 'mine': case 'india': return newsReading(k);
+    case 'sent': return newsReading('sent', 'tone');
+    case 'mon': return S.gd.mon && S.gd.mon.pts && S.gd.mon.pts.length ? newsReading('mon', 'ratio') : newsReading(S.gd.dove && S.gd.dove.err ? 'dove' : 'hawk');
+    case 'quake': {
+      if (!S.quakesAt) return 'Waiting for USGS.';
+      let best = null;
+      for (const q of S.quakes) { if (now() - q.t > 7 * DAY) continue; const c = q.imp * Math.exp(-(now() - q.t) / HOUR / 72); if (!best || c > best.c) best = {q, c}; }
+      if (!best || best.c < 0.01) return 'No significant quakes near gold mines this week.';
+      return 'M' + best.q.mag.toFixed(1) + ', ' + Math.round(best.q.dist) + ' km from ' + best.q.near + ', ' + ago(best.q.t) + '.';
+    }
+    case 'fest': return festAt(now()).label + '.';
+  }
+  return '—';
+}
+let driversBuilt = false;
+function buildDrivers() {
+  const tb = $('#dtable tbody');
+  tb.innerHTML = IDX.map((d, k) => {
+    const can = !!(d.feat || d.shock || d.fx);
+    return '<tr><td class="dname"><b>' + esc(d.name) + '</b><span>' + esc(d.desc) + '</span></td>' +
+      '<td class="ival" id="iv-' + d.k + '">—</td>' +
+      '<td><div class="meter" aria-hidden="true"><i id="im-' + d.k + '" style="width:0"></i></div></td>' +
+      '<td class="reading" id="ir-' + d.k + '">—</td>' +
+      '<td id="is-' + d.k + '"></td>' +
+      '<td class="eff">' + (d.sign > 0 ? '▲ Higher lifts gold' : '▼ Higher weighs on gold') + (d.k === 'inr' ? '<small>One for one in rupees</small>' : '') + '</td>' +
+      '<td class="eff" id="ie-' + d.k + '">—</td>' +
+      '<td>' + (can ? '<div class="slider"><input type="range" min="0" max="100" step="1" id="in-' + d.k + '" aria-label="Scenario value for ' + esc(d.name) + '"><output id="io-' + d.k + '">—</output></div>' : '') + '</td></tr>';
+  }).join('');
+  IDX.forEach(d => {
+    const el = $('#in-' + d.k); if (!el) return;
+    let timer = null;
+    el.addEventListener('input', () => {
+      S.scen[d.k] = +el.value; $('#io-' + d.k).textContent = el.value;
+      clearTimeout(timer); timer = setTimeout(() => renderForecastTable(), 120);
+    });
+  });
+  driversBuilt = true;
+}
+function renderDrivers(resetSliders) {
+  if (!driversBuilt) buildDrivers();
+  const B = S.bars, N = B.length, ix = currentIx();
+  const comp = composite(ix);
+  $('#composite').innerHTML = '<div><h3>Gold pressure, all drivers combined</h3><p class="sub">Above 50 the drivers lean toward a higher gold price, below 50 toward a lower one. Weights come from gold-market research; the learned column below shows what the model has found in recent data.</p></div>' +
+    '<div class="cm"><div class="cv num">' + (isNum(comp) ? Math.round(comp) : '—') + ' <span class="muted" style="font-size:1rem;font-weight:500">' + (isNum(comp) ? (comp > 56 ? 'leans higher' : comp < 44 ? 'leans lower' : 'balanced') : '') + '</span></div>' +
+    '<div class="ctrack" aria-hidden="true">' + (isNum(comp) ? '<i style="left:' + comp.toFixed(1) + '%"></i>' : '') + '</div><div class="cscale"><span>Lower</span><span>50</span><span>Higher</span></div></div>';
+  IDX.forEach((d, k) => {
+    const v = ix[k];
+    $('#iv-' + d.k).textContent = isNum(v) ? Math.round(v) : '—';
+    $('#im-' + d.k).style.width = (isNum(v) ? v : 0).toFixed(1) + '%';
+    $('#ir-' + d.k).innerHTML = readingFor(d.k);
+    const vals = []; for (let q = 96; q >= 0; q--) { const i = N - 1 - q * 15; vals.push(i >= 0 && B[i].ix ? B[i].ix[k] : NaN); }
+    $('#is-' + d.k).innerHTML = sparkSVG(vals);
+    const eff = $('#ie-' + d.k);
+    if (d.k === 'inr') eff.innerHTML = '+10 points ≈ ' + signed(10 * d.fx * 100, 2) + '% on the rupee price';
+    else if (S.sens && isNum(S.sens[k]) && S.fc) {
+      const bps = S.sens[k], rs = priceOf(S.fc.g) * (Math.exp(bps / 1e4) - 1);
+      eff.innerHTML = Math.abs(bps) < 0.05 || Math.abs(rs) < 1 ? 'Nothing learned yet' : (bps > 0 ? '▲ ' : '▼ ') + signedRs(rs) + ' per +10 points<small>' + bpsTxt(bps) + (d.shock ? '. +10 points means ' + esc(d.shock.label) : '') + '</small>';
+    } else eff.textContent = S.modelReady ? '—' : 'Model starting';
+    const sl = $('#in-' + d.k);
+    if (sl && (resetSliders || !(d.k in S.scen)) && document.activeElement !== sl) { const cur = isNum(v) ? Math.round(v) : 50; sl.value = cur; $('#io-' + d.k).textContent = cur; }
+  });
+  const s = S.set, b = lastBar(), y10 = b && isNum(b.us10y) ? b.us10y : S.tsy ? S.tsy.y10 : NaN;
+  const items = [
+    ['US 10-year yield', isNum(y10) ? y10.toFixed(2) + '%' : '—', 'live market'],
+    ['US 10-year real yield', S.tsy && isNum(S.tsy.r10) ? S.tsy.r10.toFixed(2) + '%' : '—', S.tsy && S.tsy.rdate ? 'Treasury, ' + S.tsy.rdate + (isNum(S.tsy.r10p) ? ', ' + signed((S.tsy.r10 - S.tsy.r10p) * 100, 0) + ' bp in a week' : '') : 'Treasury'],
+    ['India 10-year G-sec', (+s.in10y).toFixed(2) + '%', 'entered by hand'],
+    ['India minus US 10-year', isNum(y10) ? signed(+s.in10y - y10, 2) + ' pts' : '—', 'wider gaps support the rupee'],
+    ['US real policy rate', signed(+s.fed - 0.125 - +s.usCpi, 2) + '%', 'Fed mid-point minus CPI'],
+    ['India real repo rate', signed(+s.repo - +s.inCpi, 2) + '%', 'repo minus CPI'],
+  ];
+  $('#macro').innerHTML = items.map(([a, v, n]) => '<div><dt>' + esc(a) + '</dt><dd>' + v + '<small>' + esc(n) + '</small></dd></div>').join('');
+}
+function renderLearning() {
+  const st15 = liveStats(2);
+  let cov = 0, cn = 0; for (let h = 0; h < NH; h++) { const s = liveStats(h); if (isNum(s.cover)) { cov += s.cover * s.n; cn += s.n; } }
+  const lr = S.lastLR || currentLR(), ratio = S.pen.l > 0 ? S.pen.s / S.pen.l : 1;
+  const tiles = [
+    ['Gradient updates', nf0.format(S.cnt.steps), S.modelReady ? 'running on ' + (BACKEND[S.backend] || S.backend) : 'deep net not running'],
+    ['Forecasts checked', nf0.format(S.cnt.checks), nf0.format(S.cnt.misses) + ' misses penalised'],
+    ['Penalty points issued', nf0.format(S.cnt.points), 'error-size points ' + nf0.format(S.pen.cumM) + ' vs ' + nf0.format(S.pen.cumN) + ' for no change'],
+    ['Live skill at 15 min', isNum(st15.skill) ? signed(st15.skill * 100, 1) + '%' : '—', isNum(st15.skill) ? 'vs no change, last ' + st15.n : 'needs 10 checks'],
+    ['Right direction at 15 min', isNum(st15.hit) ? (st15.hit * 100).toFixed(0) + '%' : '—', isNum(st15.hit) ? 'of ' + st15.dn + ' clear moves' : 'needs 5 clear moves'],
+    ['Inside the 80% range', cn ? (100 * cov / cn).toFixed(0) + '%' : '—', 'target 80%'],
+    ['Learning rate now', lr.toFixed(5), (now() < S.pen.boostUntil ? 'drift boost on, ' : '') + '×' + clamp(ratio, 0.5, 3).toFixed(2) + ' because of recent penalties'],
+    ['Held-out skill at 15 min', S.boot && isNum(S.boot.skillDL[2]) ? signed(S.boot.skillDL[2] * 100, 1) + '%' : '—', S.boot ? 'deep net, ' + nf0.format(S.boot.nVal) + ' unseen minutes' : 'after first training'],
+  ];
+  const ps = $('#penSum');
+  if (ps) { const a = S.pen.cumM, b = S.pen.cumN; ps.textContent = b > 0 ? 'Model ' + nf0.format(a) + ' points against ' + nf0.format(b) + ' for no change: ' + Math.abs(100 * (1 - a / b)).toFixed(1) + '% ' + (a <= b ? 'fewer.' : 'more.') : ''; }
+  $('#tiles').innerHTML = tiles.map(([l, v, n]) => '<div class="tile"><div class="l">' + esc(l) + '</div><div class="v num">' + v + '</div><div class="n">' + esc(n) + '</div></div>').join('');
+  const rows = S.ledger.filter(e => S.ledgerH === 'all' || String(e.h) === S.ledgerH).slice(0, 120);
+  $('#ledgerEmpty').hidden = rows.length > 0;
+  $('#ledger tbody').innerHTML = rows.map(e => {
+    const p0 = priceOf(e.g0), fc = p0 * Math.exp(e.mu / 1e4), act = p0 * Math.exp(e.y / 1e4);
+    const dir = e.dirOk === null ? '<span class="muted">flat</span>' : e.dirOk ? '<span class="ok-mark up">✓ right</span>' : '<span class="down">✗ wrong</span>';
+    return '<tr class="' + (e.dirOk === false || !e.inBand ? 'miss' : '') + '"><td>' + istTime(e.t0) + '</td><td>' + HSHORT[e.h] + '</td><td>' + rupees(fc) + '</td><td>' + rupees(act) + '</td><td>' + signedRs(act - fc) + '</td><td>' + dir + '</td><td class="pen">' + e.P.toFixed(2) + '</td></tr>';
+  }).join('');
+  $('#skillBars').innerHTML = H.map((_, h) => {
+    const st = liveStats(h), sk = st.skill, wv = isNum(sk) ? clamp(Math.abs(sk) / 0.2, 0, 1) * 50 : 0;
+    const bar = isNum(sk) ? '<span class="skillbar" style="background:' + (sk >= 0 ? 'var(--peacock)' : 'var(--sindoor)') + ';' + (sk >= 0 ? 'left:50%' : 'right:50%') + ';width:' + wv.toFixed(1) + '%"></span>' : '';
+    return '<div class="skillrow"><span>' + HSHORT[h] + '</span><div class="skilltrack" role="img" aria-label="' + HNAME[h] + ' skill ' + (isNum(sk) ? (sk * 100).toFixed(1) + '%' : 'not yet available') + '">' + bar + '</div><span class="val">' + (isNum(sk) ? signed(sk * 100, 1) + '%' : '<span class="muted">' + st.n + ' checks</span>') + '</span></div>';
+  }).join('') + '<div class="cscale"><span>−20%</span><span>0</span><span>+20%</span></div>';
+  const ex = S.hedge;
+  $('#experts').innerHTML = '<p class="sub">Share of each forecast, by horizon. Weights shrink with every penalty point an expert earns.</p>' + H.map((_, h) => '<div class="wrow"><span>' + HSHORT[h] + '</span><div class="wbar" role="img" aria-label="' + EXPERTS.map((e, k) => e.name + ' ' + Math.round(ex[h][k] * 100) + '%').join(', ') + '">' + EXPERTS.map((e, k) => '<span style="width:' + (ex[h][k] * 100).toFixed(1) + '%;background:' + e.color + '"></span>').join('') + '</div></div>').join('') +
+    '<div class="legend">' + EXPERTS.map((e, k) => '<span class="key"><i class="sw" style="background:' + e.color + '"></i>' + esc(e.name) + ' ' + Math.round(ex[3][k] * 100) + '%</span>').join('') + '</div><p class="sub">Legend shares are for the 1-hour horizon.</p>';
+  $('#events').innerHTML = S.log.slice(0, 40).map(l => '<li><time>' + istTime(l.t) + '</time><span class="' + (l.kind === 'warn' ? 'warn' : '') + '">' + esc(l.text) + '</span></li>').join('') || '<li><span class="muted">Nothing yet.</span></li>';
+}
+function renderFeeds() {
+  $('#feeds tbody').innerHTML = Object.values(FEEDS).map(f => '<tr><td><b>' + esc(f.name) + '</b></td><td>' + esc(f.use) + '</td><td>' + (f.ok === true ? '<span class="up">● working</span>' : f.ok === false ? '<span class="down">● failing</span>' : '<span class="muted">● waiting</span>') + '</td><td class="num">' + (f.at ? ago(f.at) : 'never') + '</td><td>' + esc(f.msg || '') + '</td></tr>').join('');
+}
+let settingsBuilt = false;
+function buildSettings() {
+  $('#settings').innerHTML = FIELDS.map(f => '<div class="field"><label for="set-' + f.k + '">' + esc(f.label) + '</label><small>' + esc(f.note) + '</small><input id="set-' + f.k + '" type="number" inputmode="decimal" step="' + f.step + '"' + (f.blank ? ' placeholder="live"' : '') + '></div>').join('');
+  FIELDS.forEach(f => {
+    const el = $('#set-' + f.k);
+    el.value = S.set[f.k] === '' || S.set[f.k] === null ? '' : S.set[f.k];
+    el.addEventListener('change', () => {
+      const v = el.value.trim();
+      if (f.blank && v === '') S.set[f.k] = '';
+      else { const n = parseFloat(v); if (isNum(n)) S.set[f.k] = n; else el.value = S.set[f.k]; }
+      saveSettings(); renderAll();
+    });
+  });
+  settingsBuilt = true;
+}
+function renderSettings() { if (!settingsBuilt) buildSettings(); renderFeeds(); const m = $('#calibMsg'); if (S.set.calibAt) m.textContent = 'Calibrated ' + ago(S.set.calibAt) + ': local premium ' + signed(+S.set.prem, 2) + '%.'; }
+
+// ---------- canvas charts ----------
+function colors() {
+  const cs = getComputedStyle(document.documentElement), g = n => cs.getPropertyValue(n).trim();
+  return {ink: g('--ink'), ink2: g('--ink-2'), ink3: g('--ink-3'), rule: g('--rule'), rule2: g('--rule-2'), gold: g('--gold-line'), wash: g('--gold-wash'), sindoor: g('--sindoor'), panel: g('--panel'), panel2: g('--panel-2')};
+}
+function prepCanvas(cv) {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(40, r.width), h = Math.max(40, r.height);
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  return {ctx, w, h};
+}
+function niceTicks(lo, hi, n) {
+  const span = hi - lo || 1, raw = span / n, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+  const step = (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * p, out = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(v);
+  return out;
+}
+function poly(ctx, pts, X, Y, color, width) {
+  if (pts.length < 2) return;
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath(); pts.forEach((p, k) => { const x = X(p[0]), y = Y(p[1]); if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.stroke();
+}
+const IST_OFF = 5.5 * HOUR;
+function timeTicks(tA, tB, px) {
+  const span = tB - tA, fit = Math.max(2, Math.floor((px || 600) / 64));
+  const steps = [15 * MIN, 30 * MIN, HOUR, 2 * HOUR, 3 * HOUR, 6 * HOUR, 12 * HOUR, DAY];
+  const step = steps.find(st => span / st <= fit) || DAY;
+  const out = []; let t = Math.ceil((tA + IST_OFF) / step) * step - IST_OFF;
+  for (; t <= tB; t += step) out.push(t);
+  return {ticks: out, multi: span > 20 * HOUR};
+}
+function drawMain() {
+  const cv = $('#mainChart'); if (!cv) return;
+  const {ctx, w, h} = prepCanvas(cv), B = S.bars, N = B.length;
+  S.mainGeo = null;
+  if (N < 2) return;
+  const c = colors(), i0 = Math.max(0, N - S.chartRange), tA = B[i0].t, tN = B[N - 1].t, tB = tN + 64 * MIN;
+  const pN = priceOf(B[N - 1].gold);
+  const act = []; for (let i = i0; i < N; i++) act.push([B[i].t, priceOf(B[i].gold)]);
+  const fan = S.fc ? [[tN, pN, pN, pN]].concat(S.fc.h.map((x, k) => { const p0 = priceOf(S.fc.g); return [S.fc.t + H[k] * MIN, p0 * Math.exp(x.mu / 1e4), p0 * Math.exp((x.mu - Z80 * x.sig) / 1e4), p0 * Math.exp((x.mu + Z80 * x.sig) / 1e4)]; })) : [];
+  const gh = []; for (const e of S.ledger) { if (e.h !== 2) continue; const tt = e.t0 + 15 * MIN; if (tt < tA) break; gh.push([tt, priceOf(e.g0) * Math.exp(e.mu / 1e4)]); }
+  gh.sort((a, b) => a[0] - b[0]);
+  let lo = Infinity, hi = -Infinity;
+  for (const p of act) { if (p[1] < lo) lo = p[1]; if (p[1] > hi) hi = p[1]; }
+  for (const f of fan) { lo = Math.min(lo, f[2]); hi = Math.max(hi, f[3]); }
+  for (const g of gh) { lo = Math.min(lo, g[1]); hi = Math.max(hi, g[1]); }
+  const pad = Math.max((hi - lo) * 0.1, pN * 0.0005); lo -= pad; hi += pad;
+  const m = w < 520 ? {l: 56, r: 64, t: 12, b: 26} : {l: 66, r: 92, t: 12, b: 26};
+  const X = t => m.l + (t - tA) / (tB - tA) * (w - m.l - m.r), Y = v => m.t + (hi - v) / (hi - lo) * (h - m.t - m.b);
+  ctx.font = '12px ' + FONT; ctx.textBaseline = 'middle';
+  ctx.fillStyle = c.panel2; ctx.fillRect(X(tN), m.t, X(tB) - X(tN), h - m.t - m.b);
+  ctx.lineWidth = 1; ctx.strokeStyle = c.rule; ctx.fillStyle = c.ink3; ctx.textAlign = 'right';
+  for (const v of niceTicks(lo, hi, 5)) { const y = Math.round(Y(v)) + 0.5; ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(w - m.r, y); ctx.stroke(); ctx.fillText(nf0.format(v), m.l - 8, y); }
+  const tt = timeTicks(tA, tB, w - m.l - m.r); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (const t of tt.ticks) { const x = X(t); if (x < m.l + 14 || x > w - m.r - 10) continue; const lab = tt.multi && (t + IST_OFF) % DAY === 0 ? istDay(t) : istTime(t); ctx.fillText(lab, x, h - m.b + 7); }
+  ctx.strokeStyle = c.rule2; ctx.beginPath(); ctx.moveTo(Math.round(X(tN)) + 0.5, m.t); ctx.lineTo(Math.round(X(tN)) + 0.5, h - m.b); ctx.stroke();
+  if (fan.length) {
+    ctx.fillStyle = c.wash; ctx.beginPath();
+    fan.forEach((f, k) => { if (k) ctx.lineTo(X(f[0]), Y(f[3])); else ctx.moveTo(X(f[0]), Y(f[3])); });
+    for (let k = fan.length - 1; k >= 0; k--) ctx.lineTo(X(fan[k][0]), Y(fan[k][2]));
+    ctx.closePath(); ctx.fill();
+  }
+  poly(ctx, gh, X, Y, c.ink3, 1.25);
+  poly(ctx, act, X, Y, c.gold, 2);
+  if (fan.length) { ctx.setLineDash([5, 4]); poly(ctx, fan.map(f => [f[0], f[1]]), X, Y, c.ink, 1.75); ctx.setLineDash([]); }
+  const dot = (x, y, col) => { ctx.fillStyle = c.panel; ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill(); ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); };
+  dot(X(tN), Y(pN), c.gold);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '600 12px ' + FONT;
+  if (fan.length) {
+    const f = fan[fan.length - 1];
+    dot(X(f[0]), Y(f[1]), c.ink);
+    ctx.fillStyle = c.ink; ctx.fillText(nf0.format(f[1]), X(f[0]) + 9, Y(f[1]));
+    ctx.font = '12px ' + FONT; ctx.fillStyle = c.ink3; ctx.fillText('in 1 h', X(f[0]) + 9, Y(f[1]) + 15);
+  }
+  S.mainGeo = {X, Y, tA, tB, tN, act, fan, gh, m, w, h, lo, hi};
+  cv.setAttribute('aria-label', '24K gold rate, now ' + rupees(pN) + (fan.length ? ', forecast in one hour ' + rupees(fan[fan.length - 1][1]) : ''));
+}
+function nearest(arr, t) { let a = 0, b = arr.length - 1; if (b < 0) return -1; while (a < b) { const mid = (a + b) >> 1; if (arr[mid][0] < t) a = mid + 1; else b = mid; } if (a > 0 && Math.abs(arr[a - 1][0] - t) < Math.abs(arr[a][0] - t)) a--; return a; }
+function bindMainHover() {
+  const cv = $('#mainChart'), tip = $('#mainTip');
+  const hide = () => { tip.hidden = true; if (S.mainGeo) drawMain(); };
+  cv.addEventListener('mouseleave', hide);
+  cv.addEventListener('mousemove', ev => {
+    const G = S.mainGeo; if (!G) return;
+    const r = cv.getBoundingClientRect(), x = ev.clientX - r.left;
+    if (x < G.m.l || x > G.w - G.m.r + 40) { hide(); return; }
+    const t = G.tA + (x - G.m.l) / (G.w - G.m.l - G.m.r) * (G.tB - G.tA);
+    let html = '', px, py;
+    if (t <= G.tN || !G.fan.length) {
+      const k = nearest(G.act, t), p = G.act[k];
+      const g = nearest(G.gh, p[0]), gp = g >= 0 && G.gh[g][0] === p[0] ? G.gh[g][1] : null;
+      html = '<b>' + istTime(p[0]) + ' IST</b><br>Actual ' + rupees(p[1]) + (gp ? '<br>Predicted 15 min earlier ' + rupees(gp) + '<br>Miss ' + signedRs(p[1] - gp) : '');
+      px = G.X(p[0]); py = G.Y(p[1]);
+    } else {
+      const k = nearest(G.fan, t), f = G.fan[Math.max(1, k)];
+      html = '<b>Forecast for ' + istTime(f[0]) + ' IST</b><br>' + rupees(f[1]) + '<br>80% range ' + rupees(f[2]) + ' – ' + rupees(f[3]);
+      px = G.X(f[0]); py = G.Y(f[1]);
+    }
+    drawMain();
+    const ctx = cv.getContext('2d'), c = colors();
+    ctx.strokeStyle = c.ink3; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(px) + 0.5, G.m.t); ctx.lineTo(Math.round(px) + 0.5, G.h - G.m.b); ctx.stroke();
+    ctx.fillStyle = c.panel; ctx.beginPath(); ctx.arc(px, py, 6, 0, 7); ctx.fill(); ctx.fillStyle = c.ink; ctx.beginPath(); ctx.arc(px, py, 4, 0, 7); ctx.fill();
+    tip.innerHTML = html; tip.hidden = false;
+    const tw = tip.offsetWidth, left = px + 14 + tw > G.w ? px - tw - 14 : px + 14;
+    tip.style.left = left + 'px'; tip.style.top = clamp(py - 20, 0, G.h - tip.offsetHeight) + 'px';
+  });
+}
+function drawPen() {
+  const cv = $('#penChart'); if (!cv) return;
+  const {ctx, w, h} = prepCanvas(cv), P = S.penSeries, c = colors();
+  S.penGeo = null;
+  ctx.font = '12px ' + FONT;
+  if (P.length < 2) { ctx.fillStyle = c.ink3; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Fills in as forecasts are checked.', w / 2, h / 2); return; }
+  const tA = P[0][0], tB = P[P.length - 1][0] || tA + 1;
+  let hi = 0; for (const p of P) hi = Math.max(hi, p[1], p[2]); hi *= 1.08; if (!(hi > 0)) hi = 1;
+  const m = {l: 46, r: 14, t: 10, b: 24};
+  const X = t => m.l + (t - tA) / Math.max(1, tB - tA) * (w - m.l - m.r), Y = v => m.t + (hi - v) / hi * (h - m.t - m.b);
+  ctx.strokeStyle = c.rule; ctx.lineWidth = 1; ctx.fillStyle = c.ink3; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (const v of niceTicks(0, hi, 4)) { const y = Math.round(Y(v)) + 0.5; ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(w - m.r, y); ctx.stroke(); ctx.fillText(v >= 10000 ? (v / 1000).toFixed(0) + 'K' : nf0.format(v), m.l - 6, y); }
+  const tt = timeTicks(tA, tB, w - m.l - m.r); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (const t of tt.ticks) { const x = X(t); if (x < m.l + 14 || x > w - m.r - 8) continue; ctx.fillText(tt.multi && (t + IST_OFF) % DAY === 0 ? istDay(t) : istTime(t), x, h - m.b + 6); }
+  poly(ctx, P.map(p => [p[0], p[2]]), X, Y, c.ink3, 2);
+  poly(ctx, P.map(p => [p[0], p[1]]), X, Y, c.sindoor, 2);
+  S.penGeo = {X, Y, m, w, h, P};
+}
+function bindPenHover() {
+  const cv = $('#penChart'), tip = $('#penTip');
+  cv.addEventListener('mouseleave', () => { tip.hidden = true; drawPen(); });
+  cv.addEventListener('mousemove', ev => {
+    const G = S.penGeo; if (!G) return;
+    const r = cv.getBoundingClientRect(), x = ev.clientX - r.left;
+    const tA = G.P[0][0], tB = G.P[G.P.length - 1][0];
+    const t = tA + (x - G.m.l) / (G.w - G.m.l - G.m.r) * (tB - tA);
+    const p = G.P[nearest(G.P, t)];
+    drawPen();
+    const ctx = cv.getContext('2d'), c = colors(), px = G.X(p[0]);
+    ctx.strokeStyle = c.ink3; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.round(px) + 0.5, G.m.t); ctx.lineTo(Math.round(px) + 0.5, G.h - G.m.b); ctx.stroke();
+    tip.innerHTML = '<b>' + istTime(p[0]) + ' IST</b><br>Model ' + p[1].toFixed(1) + ' points<br>No change ' + p[2].toFixed(1) + ' points';
+    tip.hidden = false;
+    const tw = tip.offsetWidth; tip.style.left = (px + 12 + tw > G.w ? px - tw - 12 : px + 12) + 'px'; tip.style.top = '8px';
+  });
+}
+
+function renderAll() {
+  const safe = fn => { try { fn(); } catch (e) { if (TEST) console.error(e); } };
+  safe(renderStatus); safe(renderBoard); safe(renderForecastTable); safe(() => renderDrivers(false)); safe(renderLearning); safe(renderSettings); safe(drawMain); safe(drawPen);
+  if (S.bars.length && (S.modelReady || FEEDS.tf.ok === false || !S.training) && !S.booting) hideBoot();
+}
+
+// ---------- UI wiring ----------
+function bindUI() {
+  document.querySelectorAll('.chart-head .seg button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.chart-head .seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    S.chartRange = +b.dataset.range; drawMain();
+  }));
+  document.querySelectorAll('#ledgerSeg button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#ledgerSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    S.ledgerH = b.dataset.h; renderLearning();
+  }));
+  $('#gstToggle').addEventListener('change', e => { S.set.incGst = e.target.checked; saveSettings(); renderAll(); });
+  $('#calibBtn').addEventListener('click', () => {
+    const q = parseFloat($('#quote').value), b = lastBar();
+    if (!isNum(q) || q < 10000 || !b) { $('#calibMsg').textContent = 'Enter a 24K rate per 10 g, such as 142000.'; return; }
+    const keep = S.set.prem, gstOn = S.set.incGst;
+    S.set.prem = 0; S.set.incGst = false;
+    const base = priceOf(b.gold);
+    S.set.incGst = gstOn;
+    const prem = (q / base - 1) * 100;
+    if (Math.abs(prem) > 15) { S.set.prem = keep; $('#calibMsg').textContent = 'That is ' + prem.toFixed(1) + '% away from the landed cost. Check the number (per 10 g, 24K, without GST).'; return; }
+    S.set.prem = +prem.toFixed(3); S.set.calibAt = now();
+    const el = $('#set-prem'); if (el) el.value = S.set.prem;
+    saveSettings(); log('Calibrated to a local quote of ' + rupees(q) + ': premium ' + signed(S.set.prem, 2) + '%.'); renderAll();
+  });
+  $('#exportBtn').addEventListener('click', exportModel);
+  $('#importFile').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    try { importModelObj(JSON.parse(await f.text())); log('Model file imported. Learning continues from it.'); makeForecast(); saveState(); renderAll(); }
+    catch (err) { alertMsg('Could not import the model file: ' + err.message + '.'); }
+    e.target.value = '';
+  });
+  $('#retrainBtn').addEventListener('click', async () => {
+    if (S.training || !S.backend) return;
+    S.booting = true; bootUI('Retraining from scratch', 0.1, 'The ledger and settings are kept.');
+    log('Retraining from scratch on request.');
+    const ok = await trainFromScratch();
+    S.booting = false; hideBoot();
+    if (ok) { makeForecast(); saveState(); }
+    renderAll();
+  });
+  $('#clearBtn').addEventListener('click', async () => {
+    if (!window.confirm('Delete the trained model, the ledger and your settings from this browser?')) return;
+    await IDB.clear();
+    try { if (window.tf) await tf.io.removeModel(MODEL_URL); } catch (e) { /* none saved */ }
+    location.reload();
+  });
+  let rz = null;
+  window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { drawMain(); drawPen(); }, 150); });
+  bindMainHover(); bindPenHover();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawMain(); drawPen(); });
+}
+
+// ---------- start ----------
+async function warmStartFile() {
+  if (location.protocol === 'file:') return false;
+  try {
+    const r = await fetch('kasauti-state.json', {cache: 'no-store'});
+    if (!r.ok) return false;
+    importModelObj(await r.json());
+    log('Warm start: loaded the model file published with this page.');
+    return true;
+  } catch (e) { return false; }
+}
+async function init() {
+  bindUI();
+  S.booting = true;
+  bootUI('Loading saved state', 0.02);
+  const had = await loadState();
+  renderAll(); bootUI(null, 0.04);
+  refreshFx(true).then(renderAll); refreshTreasury(); refreshQuakes(); refreshSpot();
+  gdeltLoop();
+  S.backend = await setupBackend();
+  let ok = false;
+  try { ok = await ensureBars(); } catch (e) { log('Could not load market history: ' + e.message, 'warn'); }
+  if (!S.bars.length) { S.booting = false; hideBoot(); renderAll(); schedule(); return; }
+  computeIndices(); computeFeatures();
+  if (S.backend) {
+    if (had && S.wasReady && S.norm) {
+      bootUI('Restoring your trained model', 0.5);
+      try { const m = await tf.loadLayersModel(MODEL_URL); S.model = m; S.opt = tf.train.adam(CFG.lr0); S.modelReady = true; log('Resumed the saved model (' + nf0.format(S.cnt.steps) + ' updates so far).'); }
+      catch (e) { log('Saved model could not be restored; training a new one.', 'warn'); }
+    }
+    if (!S.modelReady && ok && await warmStartFile()) {
+      bootUI('Fine-tuning the published model on fresh data', 0.6);
+      const B = S.bars, items = [];
+      for (let i = Math.max(WARM, B.length - 1500); i < B.length - 2; i++) items.push({i});
+      for (let ep = 0; ep < 2; ep++) { shuffle(items); for (let s = 0; s < items.length; s += 64) { trainOn(sampleData(items.slice(s, s + 64)), CFG.lr0 * 0.5); if (s % 320 === 0) await yieldUI(); } }
+    }
+    if (!S.modelReady && ok) await trainFromScratch();
+  }
+  if (!S.norm && S.bars.length > WARM + 50) { fitNorm(WARM, S.bars.length); fitYs(WARM, S.bars.length); }
+  if (!S.rls && S.norm) S.rls = rlsInit();
+  S.booting = false;
+  hideBoot();
+  await tick();
+  saveState();
+}
+
+if (TEST) window.__kasauti = {S, tick, renderAll, saveState, trainFromScratch, makeForecast, CFG, IDX, FEEDS, priceOf, liveStats, sampleData, predictRaw, nllStats, tgt, phiAt, rlsInit, rlsUpdate, rlsPredict, fitNorm, fitYs, FI, F, FL, T, H, WARM};
+init().catch(e => { log('Start-up failed: ' + e.message, 'warn'); S.booting = false; hideBoot(); renderAll(); schedule(); });
+})();
+</script>
+</body>
+</html>
